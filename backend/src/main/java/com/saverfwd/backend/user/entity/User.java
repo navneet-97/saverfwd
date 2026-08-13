@@ -2,6 +2,7 @@ package com.saverfwd.backend.user.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,6 +12,7 @@ import java.util.Date;
 @Table(name = "users")
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 public class User {
 
@@ -27,7 +29,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String phone_number;
 
     @Column(nullable = false)

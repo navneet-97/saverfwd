@@ -5,9 +5,11 @@ import lombok.Builder;
 import java.time.LocalDateTime;
 
 @Builder
-public class ErrorResponse<T> {
-    private LocalDateTime timestamp;
-    private int status;
-    private T error;
-    private String path;
+public record ErrorResponse<T>(
+        LocalDateTime timestamp,
+        int status,
+        T error,
+        String path
+
+) {
 }
