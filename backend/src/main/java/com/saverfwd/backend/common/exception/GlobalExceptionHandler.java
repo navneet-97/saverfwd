@@ -4,13 +4,17 @@ import com.saverfwd.backend.common.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestControllerAdvice
@@ -38,10 +42,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse<Object>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e, HttpServletRequest req) {
-        Map<String, String> errors = new HashMap<>();
+        Map<String, List<String>> errors = new HashMap<>();
 
         e.getBindingResult().getFieldErrors().forEach((fieldError) -> {
-            errors.put(fieldError.getField(), fieldError.getDefaultMessage());
+            errors.computeIfAbsent(
+                    fieldError.getField(),
+                    key -> new ArrayList<>()
+            ).add(fieldError.getDefaultMessage());
         });
 
         return errorResponse(
@@ -64,12 +71,32 @@ public class GlobalExceptionHandler {
 
 //    @ExceptionHandler(ConstraintViolationException.class)
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse<String>> handleHttpMessageNotReadableException(HttpMessageNotReadableException e, HttpServletRequest req) {
+        return errorResponse(
+                HttpStatus.BAD_REQUEST,
+                "Invalid request body.",
+                "Request body is missing or malformed.",
+                req
+        );
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse<String>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e, HttpServletRequest req) {
+        return errorResponse(
+                HttpStatus.BAD_REQUEST,
+                "Invalid request parameter.",
+                String.format("Parameter '%s' should be of type '%s'.", e.getName(), e.getRequiredType().getSimpleName()),
+                req
+        );
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse<String>> handleException(Exception e, HttpServletRequest req) {
         return errorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                "something went wrong",
-                e.getMessage(),
+                "Internal server error.",
+                "Something went wrong, Please try again later.",
                 req
         );
     }

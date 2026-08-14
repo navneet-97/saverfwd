@@ -26,7 +26,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
                 .success(false)
                 .message("Forbidden")
                 .timestamp(LocalDateTime.now())
-                .error(accessDeniedException.getMessage())
+                .error("You do not have permission to access this resource")
                 .path(request.getRequestURI())
                 .build();
 

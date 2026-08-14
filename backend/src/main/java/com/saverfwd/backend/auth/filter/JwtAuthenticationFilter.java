@@ -56,21 +56,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (ExpiredJwtException e) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json");
-
-            response.getWriter().write("""
-                    {
-                        "error":"TOKEN_EXPIRED"
-                    }
-                    """);
+            authenticationEntryPoint.commence(
+                    request,
+                    response,
+                    new BadCredentialsException("EXPIRED_TOKEN", e)
+            );
 
             return;
         } catch (JwtException e) {
             authenticationEntryPoint.commence(
                     request,
                     response,
-                    new BadCredentialsException("Invalid Jwt", e)
+                    new BadCredentialsException("INVALID_TOKEN", e)
             );
 
             return;

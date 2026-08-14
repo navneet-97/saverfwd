@@ -1,23 +1,21 @@
 package com.saverfwd.backend.auth.dtos;
 
 import com.saverfwd.backend.common.constant.RegexConstants;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 import lombok.Builder;
 
 @Builder
 public record UserRegisterRequest(
 
         @NotBlank(message = "Name is required")
-        @Min(value = 3, message = "Too short name, enter your full name")
+        @Size(min = 3, message = "Too short name, enter your full name")
         String fullName,
 
         @NotBlank(message = "Email is required")
         @Email(message = "Invalid Email format")
         String email,
 
+        @NotBlank(message = "Password is required")
         @Pattern(
                 regexp = RegexConstants.PASSWORD,
                 message = "Password must be at least 8 characters long and contain uppercase, lowercase, number, and special character"

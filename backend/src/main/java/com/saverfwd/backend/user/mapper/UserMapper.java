@@ -9,7 +9,6 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
 
-    @Mapping(target = "id", ignore = true)
     @Mapping(target = "role", constant = "USER")
     @Mapping(target = "accountStatus", constant = "ACTIVE")
     @Mapping(target = "email", expression = "java(request.email().toLowerCase())")

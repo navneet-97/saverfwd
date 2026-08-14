@@ -7,7 +7,7 @@ import jakarta.validation.ConstraintValidatorContext;
 public class EmailOrPhoneValidator implements ConstraintValidator<EmailOrPhone, String> {
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
-        if(value==null || value.isBlank()){
+        if(value == null || value.isBlank()){
             return false;
         }
 

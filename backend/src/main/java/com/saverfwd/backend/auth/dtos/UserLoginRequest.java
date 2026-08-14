@@ -7,7 +7,6 @@ import lombok.Builder;
 @Builder
 public record UserLoginRequest(
 
-        @NotBlank(message = "Email or Phone Number is required")
         @EmailOrPhone
         String username,
 
