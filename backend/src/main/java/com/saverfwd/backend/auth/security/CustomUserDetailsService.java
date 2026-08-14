@@ -1,11 +1,8 @@
-package com.saverfwd.backend.auth.service;
+package com.saverfwd.backend.auth.security;
 
-import com.saverfwd.backend.auth.utils.CustomUserDetails;
 import com.saverfwd.backend.user.entity.User;
 import com.saverfwd.backend.user.repository.UserRepository;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -19,9 +16,9 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
 
     @Override
-    public @NullMarked UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user=userRepository.findByEmail(email)
-                .orElseThrow(()->new UsernameNotFoundException("User not found"));
+    public @NullMarked UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        User user = userRepository.findByEmailOrPhoneNo(username.toLowerCase(), username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
         return new CustomUserDetails(user);
     }

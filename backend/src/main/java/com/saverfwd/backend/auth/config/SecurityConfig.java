@@ -3,7 +3,7 @@ package com.saverfwd.backend.auth.config;
 import com.saverfwd.backend.auth.exception.CustomAccessDeniedHandler;
 import com.saverfwd.backend.auth.exception.CustomAuthenticationEntryPoint;
 import com.saverfwd.backend.auth.filter.JwtAuthenticationFilter;
-import com.saverfwd.backend.auth.service.CustomUserDetailsService;
+import com.saverfwd.backend.auth.security.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +32,7 @@ public class SecurityConfig {
     private final CustomAccessDeniedHandler accessDeniedHandler;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session->
@@ -67,7 +67,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) {
         return config.getAuthenticationManager();
     }
 }

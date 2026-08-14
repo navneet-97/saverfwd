@@ -23,8 +23,9 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, AccessDeniedException accessDeniedException) throws IOException, ServletException {
         ErrorResponse<Object> errorResponse = ErrorResponse.builder()
+                .success(false)
+                .message("Forbidden")
                 .timestamp(LocalDateTime.now())
-                .status(HttpServletResponse.SC_FORBIDDEN)
                 .error(accessDeniedException.getMessage())
                 .path(request.getRequestURI())
                 .build();

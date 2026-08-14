@@ -24,7 +24,8 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         ErrorResponse<Object> errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
-                .status(HttpServletResponse.SC_UNAUTHORIZED)
+                .success(false)
+                .message("Unauthorized")
                 .error(authException.getMessage())
                 .path(request.getRequestURI())
                 .build();

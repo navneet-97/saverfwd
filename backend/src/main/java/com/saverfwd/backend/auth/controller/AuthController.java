@@ -1,10 +1,11 @@
 package com.saverfwd.backend.auth.controller;
 
-import com.saverfwd.backend.auth.response.TokenResponse;
 import com.saverfwd.backend.auth.dtos.UserLoginRequest;
 import com.saverfwd.backend.auth.dtos.UserRegisterRequest;
 import com.saverfwd.backend.auth.response.AuthResponse;
 import com.saverfwd.backend.auth.service.AuthService;
+import com.saverfwd.backend.common.response.ApiResponse;
+import com.saverfwd.backend.user.dto.UserResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,25 +21,16 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody UserRegisterRequest request) {
-        TokenResponse tokenResponse = authService.registerUser(request);
-
-        AuthResponse authResponse = response("User registered successfully!", tokenResponse);
-        return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
+        return new ResponseEntity<>(authService.registerUser(request), HttpStatus.CREATED);
     }
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody UserLoginRequest request) {
-        TokenResponse tokenResponse = authService.loginUser(request);
-
-        AuthResponse authResponse = response("User logged in successfully!", tokenResponse);
-        return new ResponseEntity<>(authResponse, HttpStatus.OK);
+        return new ResponseEntity<>(authService.loginUser(request), HttpStatus.OK);
     }
 
-    private AuthResponse response(String msg, TokenResponse tokenResponse) {
-        return AuthResponse.builder()
-                .success(true)
-                .message(msg)
-                .token(tokenResponse)
-                .build();
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<UserResponse>> me() {
+        return new ResponseEntity<>(authService.getCurrentUser(), HttpStatus.OK);
     }
 }

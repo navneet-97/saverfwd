@@ -2,14 +2,10 @@ package com.saverfwd.backend.common.response;
 
 import lombok.Builder;
 
-import java.time.LocalDateTime;
-
 @Builder
-public record ErrorResponse<T>(
+public record ApiResponse<T>(
         boolean success,
         String message,
-        String path,
-        LocalDateTime timestamp,
-        T error
+        T data
 ) {
 }

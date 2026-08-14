@@ -1,16 +1,17 @@
 package com.saverfwd.backend.auth.dtos;
 
+import com.saverfwd.backend.auth.validation.EmailOrPhone;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import lombok.Builder;
 
 @Builder
 public record UserLoginRequest(
 
-        @NotBlank(message = "Email/Phone No. is required")
+        @NotBlank(message = "Email or Phone Number is required")
+        @EmailOrPhone
         String username,
 
-        @Pattern(regexp = "", message = "")
+        @NotBlank(message = "Password is required")
         String password
 ) {
 }

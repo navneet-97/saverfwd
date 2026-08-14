@@ -1,27 +1,31 @@
 package com.saverfwd.backend.user.entity;
 
+import com.saverfwd.backend.auth.entity.RefreshToken;
+import com.saverfwd.backend.common.entity.BaseEntity;
+import com.saverfwd.backend.common.enums.AccountStatus;
+import com.saverfwd.backend.common.enums.Role;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-import java.util.Date;
+import java.util.List;
 
 @Entity
-@Table(name = "users")
+@Table(
+        name = "users",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = "email"),
+                @UniqueConstraint(columnNames = "phone_number")
+        }
+)
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
 @AllArgsConstructor
-public class User {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+public class User extends BaseEntity {
 
     @Column(nullable = false)
-    private String full_name;
+    private String fullName;
 
     @Column(unique = true, nullable = false)
     private String email;
@@ -30,14 +34,20 @@ public class User {
     private String password;
 
     @Column(nullable = false, unique = true)
-    private String phone_number;
+    private String phoneNumber;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private AccountStatus account_status;
+    private AccountStatus accountStatus;
 
-    private Date created_at;
-    private Date updated_at;
+    @OneToMany(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY
+    )
+    private List<RefreshToken> refreshTokens;
 }

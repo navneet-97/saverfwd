@@ -1,5 +1,6 @@
-package com.saverfwd.backend.auth.service;
+package com.saverfwd.backend.auth.security;
 
+import com.saverfwd.backend.common.constant.JwtConstants;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -45,7 +46,7 @@ public class JwtService {
                 .issuedAt(new Date())
                 .expiration(
                         new Date(System.currentTimeMillis()
-                                + 1000 * 60 * 60 * 24)
+                                + JwtConstants.ACCESS_TOKEN_EXPIRATION_TIME)
                 )
                 .signWith(getSignInKey(),  SignatureAlgorithm.HS256)
                 .compact();

@@ -1,4 +1,4 @@
-package com.saverfwd.backend.user.entity;
+package com.saverfwd.backend.common.enums;
 
 public enum AccountStatus {
     ACTIVE,
