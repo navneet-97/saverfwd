@@ -30,6 +30,16 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ErrorResponse<String>> handleBusinessException(BusinessException e, HttpServletRequest req) {
+        return errorResponse(
+                HttpStatus.BAD_REQUEST,
+                "Logic error",
+                e.getMessage(),
+                req
+        );
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse<String>> handleResourceNotFoundException(ResourceNotFoundException e, HttpServletRequest req) {
         return errorResponse(

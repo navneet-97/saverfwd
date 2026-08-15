@@ -1,5 +1,6 @@
 package com.saverfwd.backend.auth.controller;
 
+import com.saverfwd.backend.auth.dtos.RefreshTokenRequest;
 import com.saverfwd.backend.auth.dtos.UserLoginRequest;
 import com.saverfwd.backend.auth.dtos.UserRegisterRequest;
 import com.saverfwd.backend.auth.response.AuthResponse;
@@ -32,5 +33,20 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> me() {
         return new ResponseEntity<>(authService.getCurrentUser(), HttpStatus.OK);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(@Valid @RequestBody RefreshTokenRequest request) {
+        return new ResponseEntity<>(authService.logoutCurrentSession(request.refreshToken()), HttpStatus.OK);
+    }
+
+    @PostMapping("/logout-all")
+    public ResponseEntity<ApiResponse<Void>> logoutAll() {
+        return new ResponseEntity<>(authService.logoutAllSessions(), HttpStatus.OK);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refreshAccessToken(@Valid @RequestBody RefreshTokenRequest request) {
+        return new ResponseEntity<>(authService.refreshAccessToken(request.refreshToken()), HttpStatus.OK);
     }
 }
