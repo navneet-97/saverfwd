@@ -13,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -23,6 +25,11 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody UserRegisterRequest request) {
         return new ResponseEntity<>(authService.registerUser(request), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/bulk")
+    public ResponseEntity<List<UserResponse>> registerMany(@RequestBody List<@Valid UserRegisterRequest> requests) {
+        return new ResponseEntity<>(authService.registerMany(requests), HttpStatus.CREATED);
     }
 
     @PostMapping("/login")

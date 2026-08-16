@@ -27,6 +27,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -35,7 +37,6 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
     private final PasswordEncoder passwordEncoder;
-    private final Mapper mapper;
     private final UserMapper userMapper;
     private final BlacklistService blacklistService;
     private final RefreshTokenRepository refreshTokenRepository;
@@ -52,13 +53,44 @@ public class AuthService {
             User savedUser = userRepository.save(user);
 
             long version = blacklistService.getOrInitializeVersion(savedUser.getEmail());
-            return mapper.toAuthResponse(
+            return Mapper.toAuthResponse(
                     "User registered successfully!",
                     userMapper.toUserResponse(savedUser),
                     generateTokens(savedUser, version)
             );
         } catch (DataIntegrityViolationException e) {
-            throw new DuplicateResourceException("User with this email or phone number already exists");
+            String message = e.getMostSpecificCause().getMessage();
+            String duplicateValue = message.split("'")[1];
+            throw new DuplicateResourceException("User with email or phone number '"+ duplicateValue +"' already exists");
+        }
+    }
+
+    @Transactional
+    public List<UserResponse> registerMany(List<UserRegisterRequest> requests) {
+        if(requests == null || requests.isEmpty()) {
+            throw new BusinessException("Invalid data request");
+        }
+
+        // right now, there is no check for duplicates in request and duplicates entries in db
+        // but as we are using @Transactional so on duplicates it will revert the changes,
+        // but we should definitely put checks before
+
+        List<User> users = requests.stream()
+                .map(userMapper::toUser)
+                .peek(user -> user.setPassword(passwordEncoder.encode(user.getPassword())))
+                .toList();
+
+        try {
+            List<User> savedUsers = userRepository.saveAll(users);
+
+            return savedUsers.stream()
+                    .map(userMapper::toUserResponse)
+                    .toList();
+
+        } catch (DataIntegrityViolationException e) {
+            String message = e.getMostSpecificCause().getMessage();
+            String duplicateValue = message.split("'")[1];
+            throw new DuplicateResourceException("User with email or phone number '"+ duplicateValue +"' already exists");
         }
     }
 
@@ -73,7 +105,7 @@ public class AuthService {
         User user = getAuthenticatedUser(authentication);
         long version = blacklistService.getOrInitializeVersion(user.getEmail());
 
-        return mapper.toAuthResponse(
+        return Mapper.toAuthResponse(
                 "User logged in successfully!",
                 userMapper.toUserResponse(user),
                 generateTokens(user, version)
@@ -83,7 +115,7 @@ public class AuthService {
     public ApiResponse<UserResponse> getCurrentUser() {
         User user = getUser();
 
-        return mapper.toApiResponse("Current user", userMapper.toUserResponse(user));
+        return Mapper.toApiResponse("Current user", userMapper.toUserResponse(user));
     }
 
     public ApiResponse<Void> logoutCurrentSession(String refreshToken) {
@@ -97,7 +129,7 @@ public class AuthService {
 
         tokenService.logoutCurrentDevice(accessToken, storedToken);
         SecurityContextHolder.clearContext();
-        return mapper.toApiResponse("Logged out successfully!", null);
+        return Mapper.toApiResponse("Logged out successfully!", null);
     }
 
     public ApiResponse<Void> logoutAllSessions() {
@@ -107,7 +139,7 @@ public class AuthService {
         tokenService.logoutAllDevices(user, accessToken);
         SecurityContextHolder.clearContext();
 
-        return mapper.toApiResponse("Logged out from all devices successfully!", null);
+        return Mapper.toApiResponse("Logged out from all devices successfully!", null);
     }
 
     @Transactional
@@ -118,7 +150,7 @@ public class AuthService {
 
         long version = blacklistService.getOrInitializeVersion(user.getEmail());
 
-        return mapper.toAuthResponse(
+        return Mapper.toAuthResponse(
                 "Access token refreshed successfully!",
                 userMapper.toUserResponse(user),
                 generateTokens(user, version)
@@ -146,7 +178,7 @@ public class AuthService {
         String accessToken = tokenService.accessToken(user.getEmail(), version);
         String refreshToken = tokenService.refreshToken(user);
 
-        return mapper.toTokenResponse(accessToken, refreshToken);
+        return Mapper.toTokenResponse(accessToken, refreshToken);
     }
 
     private String getAccessToken(){
