@@ -169,7 +169,7 @@ public class AuthService {
         return userDetails.getUser();
     }
 
-    private User getUser() {
+    public User getUser() {
         Authentication authentication = Common.getAuthentication();
         return getAuthenticatedUser(authentication);
     }

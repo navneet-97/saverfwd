@@ -3,6 +3,7 @@ package com.saverfwd.backend.common.exception;
 import com.saverfwd.backend.common.mapper.Mapper;
 import com.saverfwd.backend.common.response.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,11 +15,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import tools.jackson.databind.exc.InvalidFormatException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -94,10 +93,24 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse<String>> handleHttpMessageNotReadableException(HttpMessageNotReadableException e, HttpServletRequest req) {
+        String message = "Request body is missing or malformed";
+
+        // look for a better solution here
+        Throwable cause = e.getCause();
+        if (cause instanceof InvalidFormatException invalidFormatException) {
+            Class<?> targetType = invalidFormatException.getTargetType();
+
+            if (targetType != null && targetType.isEnum()) {
+                String fieldName = invalidFormatException.getPath().get(0).getPropertyName();
+
+                message = String.format("Invalid value for %s", fieldName);
+            }
+        }
+
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Mapper.toErrorResponse(
                         "Invalid request body",
-                        "Request body is missing or malformed",
+                        message,
                         req
                 ));
     }
@@ -128,6 +141,16 @@ public class GlobalExceptionHandler {
                 .body(Mapper.toErrorResponse(
                         "Redis Connection Error",
                         "Redis is not connected, Please try connecting redis",
+                        req
+                ));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse<String>> handleDataIntegrityViolationException(DataIntegrityViolationException ex, HttpServletRequest req ) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Mapper.toErrorResponse(
+                        "Invalid data",
+                        "The data violates a database constraint",
                         req
                 ));
     }
