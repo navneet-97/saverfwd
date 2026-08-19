@@ -6,7 +6,6 @@ import com.saverfwd.backend.auth.response.AuthResponse;
 import com.saverfwd.backend.auth.response.TokenResponse;
 import com.saverfwd.backend.auth.dtos.UserLoginRequest;
 import com.saverfwd.backend.auth.dtos.UserRegisterRequest;
-import com.saverfwd.backend.auth.security.CustomUserDetails;
 import com.saverfwd.backend.common.exception.BusinessException;
 import com.saverfwd.backend.common.exception.DuplicateResourceException;
 import com.saverfwd.backend.common.exception.ResourceNotFoundException;
@@ -102,7 +101,7 @@ public class AuthService {
                 )
         );
 
-        User user = getAuthenticatedUser(authentication);
+        User user = Common.validateAuthentication(authentication);
         long version = blacklistService.getOrInitializeVersion(user.getEmail());
 
         return Mapper.toAuthResponse(
@@ -113,13 +112,13 @@ public class AuthService {
     }
 
     public ApiResponse<UserResponse> getCurrentUser() {
-        User user = getUser();
+        User user = Common.getCurrentUser();
 
         return Mapper.toApiResponse("Current user", userMapper.toUserResponse(user));
     }
 
     public ApiResponse<Void> logoutCurrentSession(String refreshToken) {
-        User user = getUser();
+        User user = Common.getCurrentUser();
         String accessToken = getAccessToken();
         RefreshToken storedToken = tokenService.validateRefreshToken(refreshToken);
 
@@ -133,7 +132,7 @@ public class AuthService {
     }
 
     public ApiResponse<Void> logoutAllSessions() {
-        User user = getUser();
+        User user = Common.getCurrentUser();
         String accessToken = getAccessToken();
 
         tokenService.logoutAllDevices(user, accessToken);
@@ -155,23 +154,6 @@ public class AuthService {
                 userMapper.toUserResponse(user),
                 generateTokens(user, version)
         );
-    }
-
-    private User getAuthenticatedUser(Authentication authentication) {
-        if(authentication == null || !authentication.isAuthenticated()) {
-            throw new BusinessException("Authentication context is not found");
-        }
-
-        Object principal = authentication.getPrincipal();
-        if(!(principal instanceof CustomUserDetails userDetails)){
-            throw new BusinessException("User Details not found in authentication context");
-        }
-        return userDetails.getUser();
-    }
-
-    public User getUser() {
-        Authentication authentication = Common.getAuthentication();
-        return getAuthenticatedUser(authentication);
     }
 
     private TokenResponse generateTokens(User user, long version) {

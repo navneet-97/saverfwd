@@ -71,7 +71,7 @@ public class FoodController {
 
     @GetMapping("/my-listings")
     public ResponseEntity<ApiResponse<PageResponse<FoodResponse>>> getMyListings(Pageable pageable) {
-        return ResponseEntity.ok(Mapper.toApiResponse("My listings",null));
+        return ResponseEntity.ok(Mapper.toApiResponse("My listings",foodService.getMyListings(pageable)));
     }
 }
 

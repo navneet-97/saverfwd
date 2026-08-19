@@ -1,10 +1,11 @@
 package com.saverfwd.backend.food.service;
 
-import com.saverfwd.backend.auth.service.AuthService;
+import com.saverfwd.backend.common.constant.StatusUpdateConstants;
 import com.saverfwd.backend.common.exception.BusinessException;
 import com.saverfwd.backend.common.exception.ResourceNotFoundException;
 import com.saverfwd.backend.common.mapper.Mapper;
 import com.saverfwd.backend.common.response.PageResponse;
+import com.saverfwd.backend.common.utils.Common;
 import com.saverfwd.backend.food.dto.FoodFilterRequest;
 import com.saverfwd.backend.food.dto.FoodResponse;
 import com.saverfwd.backend.food.dto.CreateFoodRequest;
@@ -30,7 +31,6 @@ public class FoodService {
 
     private final FoodRepository foodRepository;
     private final FoodMapper foodMapper;
-    private final AuthService authService;
 
     @Transactional
     public FoodResponse addFoodItem(CreateFoodRequest request){
@@ -98,7 +98,7 @@ public class FoodService {
 
     @Transactional(readOnly = true)
     public PageResponse<FoodResponse> getMyListings(Pageable pageable) {
-        User currentUser = getCurrentUser();
+        User currentUser = Common.getCurrentUser();
         FoodFilterRequest foodFilterRequest = FoodFilterRequest.builder()
                 .ownerId(currentUser.getId())
                 .build();
@@ -106,31 +106,15 @@ public class FoodService {
         return getAllFoodItems(foodFilterRequest, pageable);
     }
 
-    private static final Map<FoodStatus, Set<FoodStatus>> ALLOWED_TRANSITIONS = Map.of(
-            FoodStatus.AVAILABLE, Set.of(FoodStatus.RESERVED, FoodStatus.CANCELLED),
-            FoodStatus.RESERVED, Set.of(FoodStatus.SOLD, FoodStatus.CLAIMED)
-    );
-
-    private static final Set<FoodStatus> TERMINAL_STATUSES = Set.of(
-            FoodStatus.SOLD,
-            FoodStatus.CLAIMED,
-            FoodStatus.CANCELLED,
-            FoodStatus.EXPIRED
-    );
-
     private void validateStatusTransition(FoodStatus current, FoodStatus target){
-        if (TERMINAL_STATUSES.contains(current)) {
+        if (StatusUpdateConstants.TERMINAL_STATUSES.contains(current)) {
             throw new BusinessException(String.format("%s food status cannot be modified!", current));
         }
 
-        Set<FoodStatus> allowed = ALLOWED_TRANSITIONS.getOrDefault(current, Set.of());
+        Set<FoodStatus> allowed = StatusUpdateConstants.ALLOWED_TRANSITIONS.getOrDefault(current, Set.of());
         if (!allowed.contains(target)) {
             throw new BusinessException(String.format("Cannot change food from status %s to %s",current, target));
         }
-    }
-
-    private User getCurrentUser(){
-        return authService.getUser();
     }
 
     private FoodItem getFoodItemEntity(Long id){
@@ -139,13 +123,13 @@ public class FoodService {
     }
 
     private void assertOwner(FoodItem foodItem){
-        User currentUser = getCurrentUser();
+        User currentUser = Common.getCurrentUser();
         if (!Objects.equals(foodItem.getOwner().getId(), currentUser.getId())){
             throw new BusinessException("You are not authorized to modify this food item.");
         }
     }
     private FoodItem initializeForCreation(FoodItem foodItem){
-        User currentUser = getCurrentUser();
+        User currentUser = Common.getCurrentUser();
         foodItem.setOwner(currentUser);
         foodItem.setStatus(FoodStatus.AVAILABLE);
         return foodItem;

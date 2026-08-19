@@ -1,5 +1,8 @@
 package com.saverfwd.backend.common.utils;
 
+import com.saverfwd.backend.auth.security.CustomUserDetails;
+import com.saverfwd.backend.common.exception.BusinessException;
+import com.saverfwd.backend.user.entity.User;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -14,5 +17,22 @@ public final class Common {
 
     public static String getSessionId() {
         return UUID.randomUUID().toString();
+    }
+
+    public static User getCurrentUser() {
+        Authentication authentication = getAuthentication();
+        return validateAuthentication(authentication);
+    }
+
+    public static User validateAuthentication(Authentication authentication) {
+        if(authentication == null || !authentication.isAuthenticated()) {
+            throw new BusinessException("Authentication context is not found");
+        }
+
+        Object principal = authentication.getPrincipal();
+        if(!(principal instanceof CustomUserDetails userDetails)){
+            throw new BusinessException("User Details not found in authentication context");
+        }
+        return userDetails.getUser();
     }
 }
