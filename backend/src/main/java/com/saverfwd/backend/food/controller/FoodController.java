@@ -7,7 +7,6 @@ import com.saverfwd.backend.food.dto.CreateFoodRequest;
 import com.saverfwd.backend.food.dto.FoodFilterRequest;
 import com.saverfwd.backend.food.dto.FoodResponse;
 import com.saverfwd.backend.food.service.FoodService;
-import com.sun.net.httpserver.HttpsServer;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -57,8 +56,17 @@ public class FoodController {
                 .body(Mapper.toApiResponse("Page Response", response));
     }
 
-    // PUT /api/food/{id}
-    // PATCH /api/food/{id}/cancel
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<FoodResponse>> updateFood(@PathVariable Long id, @Valid @RequestBody CreateFoodRequest request) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Mapper.toApiResponse("Updated Food Item", foodService.updateFoodItem(id, request)));
+    }
+
+    @PatchMapping("/{id}/cancel")
+    public ResponseEntity<ApiResponse<FoodResponse>> cancelFood(@PathVariable Long id) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Mapper.toApiResponse("Cancelled Food Item", foodService.cancelFoodItem(id)));
+    }
 
     // GET /api/food/my-listings
 }

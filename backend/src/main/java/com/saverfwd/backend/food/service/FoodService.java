@@ -1,6 +1,7 @@
 package com.saverfwd.backend.food.service;
 
 import com.saverfwd.backend.auth.service.AuthService;
+import com.saverfwd.backend.common.exception.BusinessException;
 import com.saverfwd.backend.common.exception.ResourceNotFoundException;
 import com.saverfwd.backend.common.mapper.Mapper;
 import com.saverfwd.backend.common.response.PageResponse;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -75,6 +77,41 @@ public class FoodService {
         return Mapper.toPageResponse(page);
     }
 
+    @Transactional
+    public FoodResponse updateFoodItem(Long id, CreateFoodRequest request){
+        FoodItem foodItem = foodRepository.findById(id)
+                .orElseThrow(()->new ResourceNotFoundException(String.format("Food Item Not Found with id: %s",id)));
+
+        checkOwner(foodItem);
+        if (foodItem.getStatus()!=FoodStatus.AVAILABLE){
+            throw new BusinessException("You are not the same status for this food item!");
+        }
+
+        FoodItem updatedFoodItem = foodMapper.toFoodItem(request);
+        initializeFoodItem(updatedFoodItem, foodItem.getOwner());
+
+        foodRepository.save(updatedFoodItem);
+        return foodMapper.toFoodResponse(updatedFoodItem);
+    }
+
+    @Transactional
+    public FoodResponse cancelFoodItem(Long id){
+        FoodItem foodItem = foodRepository.findById(id)
+                .orElseThrow(()->new ResourceNotFoundException(String.format("Food Item Not Found with id: %s",id)));
+
+        checkOwner(foodItem);
+
+        foodItem.setStatus(FoodStatus.CANCELLED);
+        FoodItem cancelledFoodItem = foodRepository.save(foodItem);
+        return foodMapper.toFoodResponse(cancelledFoodItem);
+    }
+
+    private void checkOwner(FoodItem foodItem){
+        User currentUser = authService.getUser();
+        if (!Objects.equals(foodItem.getOwner().getId(), currentUser.getId())){
+            throw new BusinessException("You are not the same owner for this food item!");
+        }
+    }
     private FoodItem initializeFoodItem(FoodItem foodItem, User currentUser){
         foodItem.setOwner(currentUser);
         foodItem.setStatus(FoodStatus.AVAILABLE);
