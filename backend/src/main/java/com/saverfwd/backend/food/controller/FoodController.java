@@ -6,6 +6,7 @@ import com.saverfwd.backend.common.response.PageResponse;
 import com.saverfwd.backend.food.dto.CreateFoodRequest;
 import com.saverfwd.backend.food.dto.FoodFilterRequest;
 import com.saverfwd.backend.food.dto.FoodResponse;
+import com.saverfwd.backend.food.dto.UpdateFoodStatusRequest;
 import com.saverfwd.backend.food.service.FoodService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -62,10 +63,10 @@ public class FoodController {
                 .body(Mapper.toApiResponse("Updated Food Item", foodService.updateFoodItem(id, request)));
     }
 
-    @PatchMapping("/{id}/cancel")
-    public ResponseEntity<ApiResponse<FoodResponse>> cancelFood(@PathVariable Long id) {
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<FoodResponse>> cancelFood(@PathVariable Long id, @Valid UpdateFoodStatusRequest request) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(Mapper.toApiResponse("Cancelled Food Item", foodService.cancelFoodItem(id)));
+                .body(Mapper.toApiResponse("Food Item with updated status", foodService.updateFoodItemStatus(id, request)));
     }
 
     @GetMapping("/my-listings")

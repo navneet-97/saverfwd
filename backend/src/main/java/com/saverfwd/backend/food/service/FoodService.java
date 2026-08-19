@@ -8,6 +8,7 @@ import com.saverfwd.backend.common.response.PageResponse;
 import com.saverfwd.backend.food.dto.FoodFilterRequest;
 import com.saverfwd.backend.food.dto.FoodResponse;
 import com.saverfwd.backend.food.dto.CreateFoodRequest;
+import com.saverfwd.backend.food.dto.UpdateFoodStatusRequest;
 import com.saverfwd.backend.food.entity.FoodItem;
 import com.saverfwd.backend.food.enums.FoodStatus;
 import com.saverfwd.backend.food.mapper.FoodMapper;
@@ -21,8 +22,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -73,23 +73,27 @@ public class FoodService {
     @Transactional
     public FoodResponse updateFoodItem(Long id, CreateFoodRequest request){
         FoodItem foodItem = getFoodItemEntity(id);
+        if (!foodItem.getStatus().equals(FoodStatus.AVAILABLE)){
+            throw new BusinessException(String.format("Cannot update %s food item", foodItem.getStatus()));
+        }
         assertOwner(foodItem);
-        assertStatus(foodItem);
 
         foodMapper.updateFoodItem(foodItem, request);
         return foodMapper.toFoodResponse(foodItem);
     }
 
     @Transactional
-    public FoodResponse cancelFoodItem(Long id){
+    public FoodResponse updateFoodItemStatus(Long id, UpdateFoodStatusRequest request){
         FoodItem foodItem = getFoodItemEntity(id);
+        FoodStatus foodStatus = request.foodStatus();
+        validateStatusTransition(foodItem.getStatus(), foodStatus);
 
-        assertOwner(foodItem);
-        assertStatus(foodItem);
+        if(foodStatus.equals(FoodStatus.CANCELLED)){
+            assertOwner(foodItem);
+        }
 
-        foodItem.setStatus(FoodStatus.CANCELLED);
-        FoodItem cancelledFoodItem = foodRepository.save(foodItem);
-        return foodMapper.toFoodResponse(cancelledFoodItem);
+        foodItem.setStatus(foodStatus);
+        return foodMapper.toFoodResponse(foodItem);
     }
 
     @Transactional(readOnly = true)
@@ -102,14 +106,31 @@ public class FoodService {
         return getAllFoodItems(foodFilterRequest, pageable);
     }
 
-    private User getCurrentUser(){
-        return authService.getUser();
+    private static final Map<FoodStatus, Set<FoodStatus>> ALLOWED_TRANSITIONS = Map.of(
+            FoodStatus.AVAILABLE, Set.of(FoodStatus.RESERVED, FoodStatus.CANCELLED),
+            FoodStatus.RESERVED, Set.of(FoodStatus.SOLD, FoodStatus.CLAIMED)
+    );
+
+    private static final Set<FoodStatus> TERMINAL_STATUSES = Set.of(
+            FoodStatus.SOLD,
+            FoodStatus.CLAIMED,
+            FoodStatus.CANCELLED,
+            FoodStatus.EXPIRED
+    );
+
+    private void validateStatusTransition(FoodStatus current, FoodStatus target){
+        if (TERMINAL_STATUSES.contains(current)) {
+            throw new BusinessException(String.format("%s food status cannot be modified!", current));
+        }
+
+        Set<FoodStatus> allowed = ALLOWED_TRANSITIONS.getOrDefault(current, Set.of());
+        if (!allowed.contains(target)) {
+            throw new BusinessException(String.format("Cannot change food from status %s to %s",current, target));
+        }
     }
 
-    private void assertStatus(FoodItem foodItem){
-        if (foodItem.getStatus() != FoodStatus.AVAILABLE){
-            throw new BusinessException("Only AVAILABLE food items can be cancelled.");
-        }
+    private User getCurrentUser(){
+        return authService.getUser();
     }
 
     private FoodItem getFoodItemEntity(Long id){
