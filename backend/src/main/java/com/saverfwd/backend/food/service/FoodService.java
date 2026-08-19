@@ -18,6 +18,7 @@ import com.saverfwd.backend.food.specification.FoodSpecification;
 import com.saverfwd.backend.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -64,7 +65,9 @@ public class FoodService {
     @Transactional(readOnly = true)
     public PageResponse<FoodResponse> getAllFoodItems(FoodFilterRequest filter, Pageable pageable){
         Specification<FoodItem> spec = FoodSpecification.filter(filter);
-        Page<FoodResponse> page = foodRepository.findAll(spec, pageable)
+
+        Pageable pageableWithoutSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        Page<FoodResponse> page = foodRepository.findAll(spec, pageableWithoutSort)
                 .map(foodMapper::toFoodResponse);
 
         return Mapper.toPageResponse(page);

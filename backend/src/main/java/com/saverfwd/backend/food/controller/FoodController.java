@@ -48,7 +48,7 @@ public class FoodController {
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<FoodResponse>>> getAllFood(
             @Valid @ModelAttribute FoodFilterRequest filter,
-            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
+            @PageableDefault(page = 0, size = 10)
             Pageable pageable
             ) {
 
@@ -64,7 +64,7 @@ public class FoodController {
     }
 
     @PatchMapping("/{id}/status")
-    public ResponseEntity<ApiResponse<FoodResponse>> cancelFood(@PathVariable Long id, @Valid UpdateFoodStatusRequest request) {
+    public ResponseEntity<ApiResponse<FoodResponse>> updateFoodStatus(@PathVariable Long id, @Valid @RequestBody UpdateFoodStatusRequest request) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Food Item with updated status", foodService.updateFoodItemStatus(id, request)));
     }

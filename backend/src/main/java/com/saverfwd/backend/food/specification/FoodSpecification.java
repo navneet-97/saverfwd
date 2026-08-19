@@ -2,6 +2,7 @@ package com.saverfwd.backend.food.specification;
 
 import com.saverfwd.backend.food.dto.FoodFilterRequest;
 import com.saverfwd.backend.food.entity.FoodItem;
+import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -18,6 +19,7 @@ public final class FoodSpecification {
             query.distinct(true);
 
             List<Predicate> predicates = new ArrayList<>();
+            List<Order> orders = new ArrayList<>();
 
             if (request.ownerId() != null){
                 predicates.add(cb.equal(root.get("owner").get("id"), request.ownerId()));
@@ -108,10 +110,16 @@ public final class FoodSpecification {
                 );
             }
 
-            if (request.sort() != null && !request.sort().isBlank() && ALLOWED_SORTS.contains(request.sort().toLowerCase())) {
-                predicates.add(cb.equal(root.get("sort"), request.sort()));
+
+            if (request.sort() != null && !request.sort().isBlank() && ALLOWED_SORTS.contains(request.sort())) {
+                if (Boolean.TRUE.equals(request.asc())){
+                    orders.add(cb.asc(root.get(request.sort())));
+                }else{
+                    orders.add(cb.desc(root.get(request.sort())));
+                }
             }
 
+            query.orderBy(orders);
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }

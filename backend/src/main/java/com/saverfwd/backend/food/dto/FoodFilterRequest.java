@@ -3,6 +3,7 @@ package com.saverfwd.backend.food.dto;
 import com.saverfwd.backend.food.enums.FoodStatus;
 import com.saverfwd.backend.food.enums.FoodType;
 import com.saverfwd.backend.food.enums.ListingType;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.Builder;
 
@@ -43,6 +44,7 @@ public record FoodFilterRequest(
         @Positive
         Double radiusKm,
 
-        String sort
+        String sort,
+        Boolean asc
 ) {
 }
