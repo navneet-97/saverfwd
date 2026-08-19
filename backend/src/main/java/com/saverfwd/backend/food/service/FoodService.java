@@ -20,10 +20,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -36,10 +34,8 @@ public class FoodService {
 
     @Transactional
     public FoodResponse addFoodItem(CreateFoodRequest request){
-        User currentUser = authService.getUser();
-
         FoodItem foodItem = foodMapper.toFoodItem(request);
-        initializeFoodItem(foodItem, currentUser);
+        initializeForCreation(foodItem);
 
         FoodItem savedFoodItem = foodRepository.save(foodItem);
         return foodMapper.toFoodResponse(savedFoodItem);
@@ -47,11 +43,10 @@ public class FoodService {
 
     @Transactional
     public List<FoodResponse> addBulkFood(List<CreateFoodRequest> requests){
-        User currentUser = authService.getUser();
 
         List<FoodItem> foodItems = requests.stream()
                 .map(foodMapper::toFoodItem)
-                .map(foodItem -> initializeFoodItem(foodItem, currentUser))
+                .map(this::initializeForCreation)
                 .toList();
 
         List<FoodItem> savedFoodItems = foodRepository.saveAll(foodItems);
@@ -60,15 +55,13 @@ public class FoodService {
                 .toList();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public FoodResponse getFoodById(Long id){
-        FoodItem foodItem = foodRepository.findById(id)
-                .orElseThrow(()->new ResourceNotFoundException(String.format("Food Item Not Found with id: %s",id)));
-
+        FoodItem foodItem = getFoodItemEntity(id);
         return foodMapper.toFoodResponse(foodItem);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public PageResponse<FoodResponse> getAllFoodItems(FoodFilterRequest filter, Pageable pageable){
         Specification<FoodItem> spec = FoodSpecification.filter(filter);
         Page<FoodResponse> page = foodRepository.findAll(spec, pageable)
@@ -79,40 +72,59 @@ public class FoodService {
 
     @Transactional
     public FoodResponse updateFoodItem(Long id, CreateFoodRequest request){
-        FoodItem foodItem = foodRepository.findById(id)
-                .orElseThrow(()->new ResourceNotFoundException(String.format("Food Item Not Found with id: %s",id)));
+        FoodItem foodItem = getFoodItemEntity(id);
+        assertOwner(foodItem);
+        assertStatus(foodItem);
 
-        checkOwner(foodItem);
-        if (foodItem.getStatus()!=FoodStatus.AVAILABLE){
-            throw new BusinessException("You are not the same status for this food item!");
-        }
-
-        FoodItem updatedFoodItem = foodMapper.toFoodItem(request);
-        initializeFoodItem(updatedFoodItem, foodItem.getOwner());
-
-        foodRepository.save(updatedFoodItem);
-        return foodMapper.toFoodResponse(updatedFoodItem);
+        foodMapper.updateFoodItem(foodItem, request);
+        return foodMapper.toFoodResponse(foodItem);
     }
 
     @Transactional
     public FoodResponse cancelFoodItem(Long id){
-        FoodItem foodItem = foodRepository.findById(id)
-                .orElseThrow(()->new ResourceNotFoundException(String.format("Food Item Not Found with id: %s",id)));
+        FoodItem foodItem = getFoodItemEntity(id);
 
-        checkOwner(foodItem);
+        assertOwner(foodItem);
+        assertStatus(foodItem);
 
         foodItem.setStatus(FoodStatus.CANCELLED);
         FoodItem cancelledFoodItem = foodRepository.save(foodItem);
         return foodMapper.toFoodResponse(cancelledFoodItem);
     }
 
-    private void checkOwner(FoodItem foodItem){
-        User currentUser = authService.getUser();
-        if (!Objects.equals(foodItem.getOwner().getId(), currentUser.getId())){
-            throw new BusinessException("You are not the same owner for this food item!");
+    @Transactional(readOnly = true)
+    public PageResponse<FoodResponse> getMyListings(Pageable pageable) {
+        User currentUser = getCurrentUser();
+        FoodFilterRequest foodFilterRequest = FoodFilterRequest.builder()
+                .ownerId(currentUser.getId())
+                .build();
+
+        return getAllFoodItems(foodFilterRequest, pageable);
+    }
+
+    private User getCurrentUser(){
+        return authService.getUser();
+    }
+
+    private void assertStatus(FoodItem foodItem){
+        if (foodItem.getStatus() != FoodStatus.AVAILABLE){
+            throw new BusinessException("Only AVAILABLE food items can be cancelled.");
         }
     }
-    private FoodItem initializeFoodItem(FoodItem foodItem, User currentUser){
+
+    private FoodItem getFoodItemEntity(Long id){
+        return foodRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Food Item Not Found with id: %s",id)));
+    }
+
+    private void assertOwner(FoodItem foodItem){
+        User currentUser = getCurrentUser();
+        if (!Objects.equals(foodItem.getOwner().getId(), currentUser.getId())){
+            throw new BusinessException("You are not authorized to modify this food item.");
+        }
+    }
+    private FoodItem initializeForCreation(FoodItem foodItem){
+        User currentUser = getCurrentUser();
         foodItem.setOwner(currentUser);
         foodItem.setStatus(FoodStatus.AVAILABLE);
         return foodItem;

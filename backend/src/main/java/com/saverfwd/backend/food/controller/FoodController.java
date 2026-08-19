@@ -46,7 +46,7 @@ public class FoodController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<FoodResponse>>> getAllFood(
-            @ModelAttribute FoodFilterRequest filter,
+            @Valid @ModelAttribute FoodFilterRequest filter,
             @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable
             ) {
@@ -68,6 +68,9 @@ public class FoodController {
                 .body(Mapper.toApiResponse("Cancelled Food Item", foodService.cancelFoodItem(id)));
     }
 
-    // GET /api/food/my-listings
+    @GetMapping("/my-listings")
+    public ResponseEntity<ApiResponse<PageResponse<FoodResponse>>> getMyListings(Pageable pageable) {
+        return ResponseEntity.ok(Mapper.toApiResponse("My listings",null));
+    }
 }
 

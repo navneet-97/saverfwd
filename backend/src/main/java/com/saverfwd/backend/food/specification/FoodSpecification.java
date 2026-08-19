@@ -8,12 +8,15 @@ import org.springframework.data.jpa.domain.Specification;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public final class FoodSpecification {
     private FoodSpecification(){}
 
     public static Specification<FoodItem> filter(FoodFilterRequest request) {
         return (root, query, cb)->{
+            query.distinct(true);
+
             List<Predicate> predicates = new ArrayList<>();
 
             if (request.ownerId() != null){
@@ -22,7 +25,7 @@ public final class FoodSpecification {
 
             if (request.title() != null && !request.title().isBlank()) {
                 predicates.add(cb.like(cb.lower(root.get("title")),
-                        "%" + request.title().trim().toLowerCase() + "%")
+                        contains(request.title()))
                 );
             }
 
@@ -84,7 +87,7 @@ public final class FoodSpecification {
                 double rad = request.radiusKm();
 
                 double latDelta = rad / 111.0;
-                double lngDelta = lng / (111.0*Math.cos(Math.toRadians(lat)));
+                double lngDelta = rad / (111.0 * Math.cos(Math.toRadians(lat)));
 
                 predicates.add(cb.between(
                         root.get("latitude"),
@@ -101,11 +104,26 @@ public final class FoodSpecification {
 
             if (request.pickupAddress() != null && !request.pickupAddress().isBlank()) {
                 predicates.add(cb.like(cb.lower(root.get("pickupAddress")),
-                        "%" + request.pickupAddress().trim().toLowerCase() + "%")
+                        contains(request.pickupAddress()))
                 );
+            }
+
+            if (request.sort() != null && !request.sort().isBlank() && ALLOWED_SORTS.contains(request.sort().toLowerCase())) {
+                predicates.add(cb.equal(root.get("sort"), request.sort()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }
+
+    private static String contains(String value){
+        return "%" + value.trim().toLowerCase() + "%";
+    }
+
+    private static final Set<String> ALLOWED_SORTS = Set.of(
+            "createdAt",
+            "expiryTime",
+            "price",
+            "quantity"
+    );
 }

@@ -3,10 +3,13 @@ package com.saverfwd.backend.food.dto;
 import com.saverfwd.backend.food.enums.FoodStatus;
 import com.saverfwd.backend.food.enums.FoodType;
 import com.saverfwd.backend.food.enums.ListingType;
+import jakarta.validation.constraints.Positive;
+import lombok.Builder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Builder
 public record FoodFilterRequest(
         Long ownerId,
         String title,
@@ -14,10 +17,14 @@ public record FoodFilterRequest(
         ListingType listingType,
         FoodStatus status,
 
+        @Positive
         BigDecimal minQuantity,
+        @Positive
         BigDecimal maxQuantity,
 
+        @Positive
         BigDecimal minPrice,
+        @Positive
         BigDecimal maxPrice,
 
         LocalDateTime expiryFrom,
@@ -33,6 +40,9 @@ public record FoodFilterRequest(
         BigDecimal longitude,
 
         String pickupAddress,
-        Double radiusKm
+        @Positive
+        Double radiusKm,
+
+        String sort
 ) {
 }

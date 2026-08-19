@@ -3,8 +3,7 @@ package com.saverfwd.backend.food.mapper;
 import com.saverfwd.backend.food.dto.FoodResponse;
 import com.saverfwd.backend.food.dto.CreateFoodRequest;
 import com.saverfwd.backend.food.entity.FoodItem;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.mapstruct.*;
 
 @Mapper(componentModel = "spring")
 public interface FoodMapper {
@@ -14,4 +13,7 @@ public interface FoodMapper {
 
     @Mapping(target = "ownerId", source = "owner.id")
     FoodResponse toFoodResponse(FoodItem foodItem);
+
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateFoodItem(@MappingTarget FoodItem foodItem, CreateFoodRequest request);
 }
