@@ -2,7 +2,7 @@ package com.saverfwd.backend.user.service;
 
 import com.saverfwd.backend.common.mapper.Mapper;
 import com.saverfwd.backend.common.response.ApiResponse;
-import com.saverfwd.backend.user.dto.PageResponse;
+import com.saverfwd.backend.common.response.PageResponse;
 import com.saverfwd.backend.user.dto.UserFilterRequest;
 import com.saverfwd.backend.user.dto.UserResponse;
 import com.saverfwd.backend.user.entity.User;

@@ -2,7 +2,7 @@ package com.saverfwd.backend.user.controller;
 
 import com.saverfwd.backend.common.mapper.Mapper;
 import com.saverfwd.backend.common.response.ApiResponse;
-import com.saverfwd.backend.user.dto.PageResponse;
+import com.saverfwd.backend.common.response.PageResponse;
 import com.saverfwd.backend.user.dto.UserFilterRequest;
 import com.saverfwd.backend.user.dto.UserResponse;
 import com.saverfwd.backend.user.service.UserService;
@@ -24,7 +24,7 @@ public class UserController {
     @GetMapping
     public ResponseEntity<ApiResponse<PageResponse<UserResponse>>> getUsers(
             @ModelAttribute UserFilterRequest filter,
-            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable
     ) {
         PageResponse<UserResponse> response = userService.getUsers(filter, pageable);

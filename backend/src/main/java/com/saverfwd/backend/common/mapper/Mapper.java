@@ -4,7 +4,7 @@ import com.saverfwd.backend.auth.response.AuthResponse;
 import com.saverfwd.backend.auth.response.TokenResponse;
 import com.saverfwd.backend.common.response.ApiResponse;
 import com.saverfwd.backend.common.response.ErrorResponse;
-import com.saverfwd.backend.user.dto.PageResponse;
+import com.saverfwd.backend.common.response.PageResponse;
 import com.saverfwd.backend.user.dto.UserResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;

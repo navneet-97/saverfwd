@@ -2,17 +2,20 @@ package com.saverfwd.backend.food.controller;
 
 import com.saverfwd.backend.common.mapper.Mapper;
 import com.saverfwd.backend.common.response.ApiResponse;
+import com.saverfwd.backend.common.response.PageResponse;
 import com.saverfwd.backend.food.dto.CreateFoodRequest;
+import com.saverfwd.backend.food.dto.FoodFilterRequest;
 import com.saverfwd.backend.food.dto.FoodResponse;
 import com.saverfwd.backend.food.service.FoodService;
+import com.sun.net.httpserver.HttpsServer;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -36,9 +39,23 @@ public class FoodController {
 
     }
 
-    // GET /api/food/{id}
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<FoodResponse>> getFoodById(@PathVariable Long id) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Mapper.toApiResponse("Requested Food Item", foodService.getFoodById(id)));
+    }
 
-    // GET /api/food
+    @GetMapping
+    public ResponseEntity<ApiResponse<PageResponse<FoodResponse>>> getAllFood(
+            @ModelAttribute FoodFilterRequest filter,
+            @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
+            Pageable pageable
+            ) {
+
+        PageResponse<FoodResponse> response = foodService.getAllFoodItems(filter, pageable);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Mapper.toApiResponse("Page Response", response));
+    }
 
     // PUT /api/food/{id}
     // PATCH /api/food/{id}/cancel

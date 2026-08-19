@@ -1,4 +1,4 @@
-package com.saverfwd.backend.user.dto;
+package com.saverfwd.backend.common.response;
 
 import lombok.Builder;
 
