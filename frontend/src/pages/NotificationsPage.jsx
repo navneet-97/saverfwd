@@ -1,11 +1,12 @@
 import { Bell } from 'lucide-react';
 import EmptyState from '../components/common/EmptyState';
+import './MyListingsPage.css';
 
 export default function NotificationsPage() {
   return (
-    <div style={{ maxWidth: 600, margin: '0 auto' }}>
-      <div style={{ marginBottom: 'var(--space-6)' }}>
-        <h1 style={{ fontSize: 'var(--font-size-2xl)' }}>Notifications</h1>
+    <div className="my-listings" style={{ maxWidth: 600 }}>
+      <div className="my-listings__header">
+        <h1>Notifications</h1>
       </div>
       <EmptyState
         icon={Bell}

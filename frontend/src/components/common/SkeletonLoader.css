@@ -1,7 +1,7 @@
 .skeleton {
-  background: linear-gradient(90deg, #f0f2f5 25%, #e4e7ec 50%, #f0f2f5 75%);
+  background: linear-gradient(90deg, #f0f2f5 25%, #e8eaed 50%, #f0f2f5 75%);
   background-size: 200% 100%;
-  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  animation: shimmer 1.8s ease-in-out infinite;
   border-radius: var(--radius-md);
 }
 

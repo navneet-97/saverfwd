@@ -1,11 +1,12 @@
 import { ShoppingBag } from 'lucide-react';
 import EmptyState from '../components/common/EmptyState';
+import './MyListingsPage.css';
 
 export default function OrdersPage() {
   return (
-    <div style={{ maxWidth: 600, margin: '0 auto' }}>
-      <div style={{ marginBottom: 'var(--space-6)' }}>
-        <h1 style={{ fontSize: 'var(--font-size-2xl)' }}>My Orders</h1>
+    <div className="my-listings" style={{ maxWidth: 600 }}>
+      <div className="my-listings__header">
+        <h1>My Orders</h1>
       </div>
       <EmptyState
         icon={ShoppingBag}

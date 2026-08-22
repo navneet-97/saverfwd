@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import Header from './components/layout/Header';
+import Footer from './components/layout/Footer';
 import AppLayout from './components/layout/AppLayout';
 import ToastContainer from './components/common/Toast';
 import LandingPage from './pages/LandingPage';
@@ -17,6 +18,10 @@ import OrdersPage from './pages/OrdersPage';
 import MessagesPage from './pages/MessagesPage';
 import ProfilePage from './pages/ProfilePage';
 import NotificationsPage from './pages/NotificationsPage';
+import AboutPage from './pages/AboutPage';
+import PrivacyPage from './pages/PrivacyPage';
+import TermsPage from './pages/TermsPage';
+import ContactPage from './pages/ContactPage';
 
 function ProtectedRoute() {
   const { user, loading } = useAuth();
@@ -60,32 +65,43 @@ function App() {
     <BrowserRouter>
       <ToastProvider>
         <AuthProvider>
-          <Header />
-          <Routes>
-            {/* Public routes */}
-            <Route element={<PublicRoute />}>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            </Route>
+          <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%', maxWidth: 'none' }}>
+            <Header />
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', width: '100%', maxWidth: 'none' }}>
+              <Routes>
+                {/* Public routes */}
+                <Route element={<PublicRoute />}>
+                  <Route path="/" element={<LandingPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                </Route>
 
-            {/* Protected routes */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/browse" element={<BrowseFoodPage />} />
-              <Route path="/food/:id" element={<FoodDetailPage />} />
-              <Route path="/create-listing" element={<CreateListingPage />} />
-              <Route path="/my-listings" element={<MyListingsPage />} />
-              <Route path="/orders" element={<OrdersPage />} />
-              <Route path="/messages" element={<MessagesPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/notifications" element={<NotificationsPage />} />
-            </Route>
+                {/* Protected routes */}
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/dashboard" element={<DashboardPage />} />
+                  <Route path="/browse" element={<BrowseFoodPage />} />
+                  <Route path="/food/:id" element={<FoodDetailPage />} />
+                  <Route path="/create-listing" element={<CreateListingPage />} />
+                  <Route path="/my-listings" element={<MyListingsPage />} />
+                  <Route path="/orders" element={<OrdersPage />} />
+                  <Route path="/messages" element={<MessagesPage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="/notifications" element={<NotificationsPage />} />
+                </Route>
 
-            {/* Catch all */}
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+                {/* Info pages (public, no auth needed) */}
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/terms" element={<TermsPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+
+                {/* Catch all */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+              <Footer />
+            </div>
+          </div>
           <ToastContainer />
         </AuthProvider>
       </ToastProvider>

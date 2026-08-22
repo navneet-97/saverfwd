@@ -9,12 +9,13 @@ export default function Button({
   loading = false,
   type = 'button',
   className = '',
+  icon: Icon,
   ...props
 }) {
   return (
     <button
       type={type}
-      className={`btn btn--${variant} btn--${size} ${fullWidth ? 'btn--full' : ''} ${className}`}
+      className={`btn btn--${variant} btn--${size} ${fullWidth ? 'btn--full' : ''} ${loading ? 'btn--loading' : ''} ${className}`}
       disabled={disabled || loading}
       {...props}
     >
@@ -23,7 +24,8 @@ export default function Button({
           <span className="spinner" />
         </span>
       )}
-      {children}
+      {!loading && Icon && <Icon size={size === 'sm' ? 15 : size === 'lg' ? 20 : 17} />}
+      {children && <span className="btn__text">{children}</span>}
     </button>
   );
 }

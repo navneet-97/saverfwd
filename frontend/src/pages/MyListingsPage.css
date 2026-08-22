@@ -12,6 +12,8 @@
 
 .my-listings__header h1 {
   font-size: var(--font-size-2xl);
+  letter-spacing: -0.025em;
+  font-weight: 800;
 }
 
 .my-listings__list {
@@ -27,18 +29,21 @@
   padding: var(--space-4);
   background: var(--color-surface);
   border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-lg);
-  transition: box-shadow var(--transition-fast);
+  border-radius: var(--radius-xl);
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-xs);
 }
 
 .my-listings__item:hover {
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border);
+  transform: translateY(-1px);
 }
 
 .my-listings__item-thumb {
   width: 56px;
   height: 56px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-xl);
   background: var(--color-primary-lighter);
   display: flex;
   align-items: center;

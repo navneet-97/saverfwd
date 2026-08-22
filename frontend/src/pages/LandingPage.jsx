@@ -7,11 +7,6 @@ export default function LandingPage() {
     <div className="landing">
       {/* Hero */}
       <section className="landing__hero">
-        <div className="landing__hero-bg">
-          <div className="landing__hero-shape landing__hero-shape--1" />
-          <div className="landing__hero-shape landing__hero-shape--2" />
-          <div className="landing__hero-shape landing__hero-shape--3" />
-        </div>
         <div className="container landing__hero-inner">
           <div className="landing__hero-badge">
             <Leaf size={14} />
@@ -30,7 +25,7 @@ export default function LandingPage() {
               Browse Food
               <ArrowRight size={20} />
             </Link>
-            <Link to="/register" className="btn btn--secondary btn--lg">
+            <Link to="/register" className="btn btn--outline-light btn--lg">
               List Food Free
             </Link>
           </div>
@@ -63,7 +58,7 @@ export default function LandingPage() {
           </div>
           <div className="landing__stat-divider" />
           <div className="landing__stat-item">
-            <span className="listing__stat-number">92%</span>
+            <span className="landing__stat-number">92%</span>
             <span className="landing__stat-desc">Successful Pickups</span>
           </div>
           <div className="landing__stat-divider" />
@@ -74,7 +69,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Concept */}
+      {/* Concept — How It Works */}
       <section className="landing__concept">
         <div className="container">
           <div className="landing__concept-header">
@@ -85,7 +80,6 @@ export default function LandingPage() {
 
           <div className="landing__concept-flow">
             <div className="landing__concept-item">
-              <div className="landing__concept-number">01</div>
               <div className="landing__concept-icon landing__concept-icon--food">
                 <Apple size={28} />
               </div>
@@ -98,7 +92,6 @@ export default function LandingPage() {
             </div>
 
             <div className="landing__concept-item">
-              <div className="landing__concept-number">02</div>
               <div className="landing__concept-icon landing__concept-icon--platform">
                 <HandHeart size={28} />
               </div>
@@ -111,7 +104,6 @@ export default function LandingPage() {
             </div>
 
             <div className="landing__concept-item">
-              <div className="landing__concept-number">03</div>
               <div className="landing__concept-icon landing__concept-icon--people">
                 <Users size={28} />
               </div>
@@ -170,11 +162,11 @@ export default function LandingPage() {
             <h2>Ready to make a difference?</h2>
             <p>Join SaverFwd and start reducing food waste in your community today. It's free and takes less than 2 minutes.</p>
             <div className="landing__cta-actions">
-              <Link to="/register" className="btn btn--primary btn--lg">
+              <Link to="/register" className="btn btn--cta-primary btn--lg">
                 Create Free Account
                 <ArrowRight size={20} />
               </Link>
-              <Link to="/browse" className="btn btn--ghost btn--lg" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
+              <Link to="/browse" className="btn btn--cta-ghost btn--lg">
                 Browse Food First
               </Link>
             </div>
@@ -182,22 +174,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="landing__footer">
-        <div className="container landing__footer-inner">
-          <div className="landing__footer-brand">
-            <span className="landing__logo-icon">🌿</span>
-            <span>SaverFwd</span>
-          </div>
-          <p className="landing__footer-text">© 2026 SaverFwd. Reducing food waste, one meal at a time.</p>
-          <div className="landing__footer-links">
-            <a href="#">About</a>
-            <a href="#">Privacy</a>
-            <a href="#">Terms</a>
-            <a href="#">Contact</a>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

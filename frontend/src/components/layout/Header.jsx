@@ -69,7 +69,6 @@ export default function Header() {
             SaverFwd
           </Link>
           <div className="header__public-links">
-            <Link to="/browse" className="btn btn--ghost btn--sm">Browse Food</Link>
             <Link to="/login" className="btn btn--ghost btn--sm">Log In</Link>
             <Link to="/register" className="btn btn--primary btn--sm">Get Started</Link>
           </div>

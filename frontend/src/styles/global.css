@@ -14,6 +14,7 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
@@ -23,6 +24,14 @@ body {
   color: var(--color-text);
   background-color: var(--color-bg);
   min-height: 100vh;
+  width: 100%;
+  max-width: none;
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+  max-width: none;
 }
 
 a {
@@ -33,7 +42,12 @@ a {
 
 a:hover {
   color: var(--color-primary-hover);
-  text-decoration: underline;
+}
+
+/* Buttons never get underline on hover */
+a.btn:hover,
+a.btn:focus {
+  text-decoration: none;
 }
 
 img {
@@ -54,10 +68,10 @@ h1, h2, h3, h4, h5, h6 {
   line-height: var(--line-height-tight);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text);
-  letter-spacing: -0.01em;
+  letter-spacing: var(--letter-spacing-tight);
 }
 
-h1 { font-size: var(--font-size-4xl); letter-spacing: -0.025em; }
+h1 { font-size: var(--font-size-4xl); letter-spacing: -0.03em; }
 h2 { font-size: var(--font-size-3xl); }
 h3 { font-size: var(--font-size-2xl); }
 h4 { font-size: var(--font-size-xl); }
@@ -69,6 +83,13 @@ h5 { font-size: var(--font-size-lg); }
   max-width: var(--container-max);
   margin: 0 auto;
   padding: 0 var(--space-6);
+}
+
+/* Ensure full-width content on small screens */
+@media (max-width: 480px) {
+  .container {
+    padding: 0 var(--space-4);
+  }
 }
 
 .sr-only {
@@ -86,7 +107,7 @@ h5 { font-size: var(--font-size-lg); }
 /* Animations */
 @keyframes skeleton-pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  50% { opacity: 0.4; }
 }
 
 @keyframes slide-in-right {
@@ -95,7 +116,12 @@ h5 { font-size: var(--font-size-lg); }
 }
 
 @keyframes slide-in-up {
-  from { transform: translateY(12px); opacity: 0; }
+  from { transform: translateY(16px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slide-in-down {
+  from { transform: translateY(-16px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
@@ -104,14 +130,40 @@ h5 { font-size: var(--font-size-lg); }
   to { opacity: 1; }
 }
 
+@keyframes fade-in-up {
+  from { transform: translateY(8px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
 @keyframes scale-in {
-  from { transform: scale(0.96); opacity: 0; }
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes scale-in-sm {
+  from { transform: scale(0.97); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
 
 @keyframes float {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-6px); }
+}
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 0.5; }
+  50% { transform: scale(1); opacity: 0; }
+  100% { transform: scale(0.8); opacity: 0; }
+}
+
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
 }
 
 /* Scrollbar */
@@ -141,4 +193,32 @@ h5 { font-size: var(--font-size-lg); }
 ::selection {
   background: var(--color-primary-light);
   color: var(--color-primary-dark);
+}
+
+/* Smooth page transitions */
+.page-enter {
+  animation: fade-in-up 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* Utility: glass effect */
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+}
+
+/* Utility: subtle border radius with overflow hidden */
+.rounded-xl {
+  border-radius: var(--radius-xl);
+}
+
+/* Prevent layout shift on body when modals open */
+body.modal-open {
+  overflow: hidden;
+}
+
+/* Smooth font rendering for dark backgrounds */
+.on-dark {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

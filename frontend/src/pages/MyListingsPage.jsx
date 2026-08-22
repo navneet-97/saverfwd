@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Package } from 'lucide-react';
 import foodApi from '../api/foodApi';
 import { useToast } from '../context/ToastContext';
@@ -23,6 +23,7 @@ const TABS = [
 
 export default function MyListingsPage() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [allListings, setAllListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('');
@@ -176,7 +177,7 @@ export default function MyListingsPage() {
           title="No listings yet"
           description="Help reduce food waste by listing your excess food."
           actionLabel="List Food"
-          onAction={() => window.location.href = '/create-listing'}
+          onAction={() => navigate('/create-listing')}
         />
       )}
     </div>
