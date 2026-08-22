@@ -1,0 +1,121 @@
+.create-listing {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.create-listing__header {
+  margin-bottom: var(--space-8);
+}
+
+.create-listing__header h1 {
+  font-size: var(--font-size-2xl);
+  margin-bottom: var(--space-1);
+}
+
+.create-listing__header p {
+  color: var(--color-text-secondary);
+}
+
+.create-listing__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.create-listing__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.create-listing__section h2 {
+  font-size: var(--font-size-lg);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.create-listing__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+@media (max-width: 480px) {
+  .create-listing__row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Listing type cards */
+.create-listing__listing-types {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.create-listing__type-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: center;
+}
+
+.create-listing__type-card input {
+  display: none;
+}
+
+.create-listing__type-card:hover {
+  border-color: var(--color-primary);
+}
+
+.create-listing__type-card--active {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.create-listing__type-label {
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-base);
+}
+
+.create-listing__type-desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* Image upload */
+.create-listing__file-input {
+  display: none;
+}
+
+.create-listing__file-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.create-listing__file-label:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* Actions */
+.create-listing__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-light);
+}

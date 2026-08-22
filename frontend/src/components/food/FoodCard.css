@@ -1,0 +1,112 @@
+.food-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+}
+
+.food-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-3px);
+  border-color: var(--color-border);
+}
+
+.food-card__image-wrap {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+}
+
+.food-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-slow);
+}
+
+.food-card:hover .food-card__image {
+  transform: scale(1.03);
+}
+
+.food-card__badges {
+  position: absolute;
+  top: var(--space-3);
+  left: var(--space-3);
+  display: flex;
+  gap: var(--space-1);
+}
+
+.food-card__body {
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.food-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.food-card__title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  line-height: var(--line-height-tight);
+  letter-spacing: -0.01em;
+}
+
+.food-card__price {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+.food-card__price--free {
+  color: var(--color-primary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  background: var(--color-primary-light);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.food-card__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.food-card__type {
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+.food-card__qty {
+  color: var(--color-text-muted);
+}
+
+.food-card__info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.food-card__expiry {
+  font-size: var(--font-size-xs);
+  color: var(--color-secondary);
+  font-weight: var(--font-weight-semibold);
+}
