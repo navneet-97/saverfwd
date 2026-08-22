@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { validateLogin } from '../utils/validators';
@@ -10,7 +10,6 @@ import './AuthPages.css';
 export default function LoginPage() {
   const { login } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
@@ -32,11 +31,10 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      // Backend login expects { username, password }
-      // We send email as the username field
+      // login() sets user in AuthContext → PublicRoute redirects to /dashboard
       await login({ username: formData.email, password: formData.password });
       toast.success('Welcome back!');
-      navigate('/dashboard');
+      // Navigation handled by PublicRoute detecting user !== null
     } catch (err) {
       const message = err.message || 'Invalid email or password.';
       toast.error(message);

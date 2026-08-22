@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import authApi from '../api/authApi';
 
 const AuthContext = createContext(null);
@@ -6,8 +6,9 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const justAuthenticated = useRef(false);
 
-  // Fetch current user from /api/auth/me
+  // Fetch current user from /api/auth/me (for page reload / initial load)
   const fetchUser = useCallback(async () => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
@@ -28,11 +29,16 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    // Skip fetch if we just logged in/register — user is already set
+    if (justAuthenticated.current) {
+      justAuthenticated.current = false;
+      setLoading(false);
+      return;
+    }
     fetchUser();
   }, [fetchUser]);
 
   const login = async (credentials) => {
-    // Backend expects { username, password } — login form sends email as username
     const authData = await authApi.login(credentials);
     // Backend returns: { success, message, data: UserResponse, tokens: TokenResponse }
     const accessToken = authData.tokens?.accessToken;
@@ -41,17 +47,13 @@ export function AuthProvider({ children }) {
     if (accessToken) localStorage.setItem('accessToken', accessToken);
     if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
 
-    // authData.data is the UserResponse
-    if (authData.data) {
-      setUser(authData.data);
-    } else {
-      await fetchUser();
-    }
+    justAuthenticated.current = true;
+    setUser(authData.data);
+    setLoading(false);
     return authData;
   };
 
   const register = async (registerData) => {
-    // Backend expects { fullName, email, password, phoneNumber }
     const authData = await authApi.register(registerData);
     const accessToken = authData.tokens?.accessToken;
     const refreshToken = authData.tokens?.refreshToken;
@@ -59,11 +61,9 @@ export function AuthProvider({ children }) {
     if (accessToken) localStorage.setItem('accessToken', accessToken);
     if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
 
-    if (authData.data) {
-      setUser(authData.data);
-    } else {
-      await fetchUser();
-    }
+    justAuthenticated.current = true;
+    setUser(authData.data);
+    setLoading(false);
     return authData;
   };
 

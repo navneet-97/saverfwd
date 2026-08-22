@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { validateRegister } from '../utils/validators';
@@ -10,7 +10,6 @@ import './AuthPages.css';
 export default function RegisterPage() {
   const { register } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -39,12 +38,11 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const { confirmPassword: _, ...submitData } = formData;
-      // Backend expects { fullName, email, password, phoneNumber }
-      // Strip non-digits from phone for backend pattern ^[6-9]\d{9}$
       submitData.phoneNumber = submitData.phoneNumber.replace(/\D/g, '');
+      // register() sets user in AuthContext → PublicRoute redirects to /dashboard
       await register(submitData);
       toast.success('Account created! Welcome to SaverFwd.');
-      navigate('/dashboard');
+      // Navigation handled by PublicRoute detecting user !== null
     } catch (err) {
       const message = err.message || 'Registration failed. Please try again.';
       toast.error(message);
