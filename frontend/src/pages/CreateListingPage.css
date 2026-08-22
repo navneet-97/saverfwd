@@ -56,9 +56,10 @@
 .create-listing__type-card {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: var(--space-1);
-  padding: var(--space-4);
-  border: 1.5px solid var(--color-border);
+  padding: var(--space-5) var(--space-4);
+  border: 2px solid var(--color-border);
   border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -71,11 +72,18 @@
 
 .create-listing__type-card:hover {
   border-color: var(--color-primary);
+  background: var(--color-primary-lighter);
 }
 
 .create-listing__type-card--active {
   border-color: var(--color-primary);
   background: var(--color-primary-light);
+  box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.create-listing__type-emoji {
+  font-size: 1.5rem;
+  margin-bottom: var(--space-1);
 }
 
 .create-listing__type-label {
@@ -88,27 +96,24 @@
   color: var(--color-text-secondary);
 }
 
-/* Image upload */
-.create-listing__file-input {
-  display: none;
+/* Location section */
+.create-listing__location {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
-.create-listing__file-label {
+.create-listing__location-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: var(--space-8);
-  border: 2px dashed var(--color-border);
-  border-radius: var(--radius-lg);
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-  transition: all var(--transition-fast);
+  justify-content: space-between;
 }
 
-.create-listing__file-label:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+.create-listing__location-header h3 {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  margin: 0;
 }
 
 /* Actions */
@@ -118,4 +123,26 @@
   gap: var(--space-3);
   padding-top: var(--space-4);
   border-top: 1px solid var(--color-border-light);
+}
+
+/* Spinner animation */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Mobile full-width buttons */
+@media (max-width: 640px) {
+  .create-listing__actions {
+    flex-direction: column-reverse;
+  }
+
+  .create-listing__actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
 }

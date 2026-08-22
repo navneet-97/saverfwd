@@ -1,35 +1,98 @@
-import apiClient from './client';
+import apiClient, { unwrapOrThrow } from './client';
+
+/**
+ * Build query params with proper prefix nesting for Spring Boot @ModelAttribute binding.
+ * Backend expects: ?filter.title=xyz&filter.foodType=PREPARED_MEAL&pageable.page=0&pageable.size=12
+ */
+function buildParams(filter = {}, pageable = {}) {
+  const params = {};
+
+  // Filter params — only include non-empty values
+  Object.entries(filter).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      params[`filter.${key}`] = value;
+    }
+  });
+
+  // Pageable params
+  Object.entries(pageable).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      params[`pageable.${key}`] = value;
+    }
+  });
+
+  return params;
+}
 
 const foodApi = {
-  getListings: (params) => apiClient.get('/food', { params }),
-
-  getListing: (id) => apiClient.get(`/food/${id}`),
-
-  createListing: (data) => {
-    const isFormData = data instanceof FormData;
-    return apiClient.post('/food', data, isFormData ? {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    } : {});
+  /**
+   * GET /api/food
+   * Query params: filter (FoodFilterRequest) + pageable (Pageable)
+   */
+  getListings: async (filter = {}, pageable = { page: 0, size: 12 }) => {
+    const params = buildParams(filter, pageable);
+    const response = await apiClient.get('/food', { params });
+    return unwrapOrThrow(response);
   },
 
-  updateListing: (id, data) => {
-    const isFormData = data instanceof FormData;
-    return apiClient.put(`/food/${id}`, data, isFormData ? {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    } : {});
+  /**
+   * GET /api/food/{id}
+   */
+  getListing: async (id) => {
+    const response = await apiClient.get(`/food/${id}`);
+    return unwrapOrThrow(response);
   },
 
-  deleteListing: (id) => apiClient.delete(`/food/${id}`),
+  /**
+   * POST /api/food
+   * Body: CreateFoodRequest
+   */
+  createListing: async (data) => {
+    const response = await apiClient.post('/food', data);
+    return unwrapOrThrow(response);
+  },
 
-  getMyListings: (params) => apiClient.get('/food/my', { params }),
+  /**
+   * PUT /api/food/{id}
+   * Body: CreateFoodRequest
+   */
+  updateListing: async (id, data) => {
+    const response = await apiClient.put(`/food/${id}`, data);
+    return unwrapOrThrow(response);
+  },
 
-  searchListings: (query, params) =>
-    apiClient.get('/food/search', { params: { q: query, ...params } }),
+  /**
+   * PATCH /api/food/{id}/status
+   * Body: UpdateFoodStatusRequest { foodStatus }
+   */
+  updateStatus: async (id, foodStatus) => {
+    const response = await apiClient.patch(`/food/${id}/status`, { foodStatus });
+    return unwrapOrThrow(response);
+  },
 
-  getNearbyListings: (lat, lng, radius) =>
-    apiClient.get('/food/nearby', { params: { lat, lng, radius } }),
+  /**
+   * GET /api/food/my-listings
+   * Query params: pageable only (no filter support on backend)
+   */
+  getMyListings: async (pageable = { page: 0, size: 20 }) => {
+    const params = {};
+    Object.entries(pageable).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        params[`pageable.${key}`] = value;
+      }
+    });
+    const response = await apiClient.get('/food/my-listings', { params });
+    return unwrapOrThrow(response);
+  },
 
-  getRecommendedListings: () => apiClient.get('/food/recommended'),
+  /**
+   * POST /api/food/bulk
+   * Body: CreateFoodRequest[]
+   */
+  createBulk: async (items) => {
+    const response = await apiClient.post('/food/bulk', items);
+    return unwrapOrThrow(response);
+  },
 };
 
 export default foodApi;

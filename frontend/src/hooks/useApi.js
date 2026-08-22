@@ -10,8 +10,8 @@ export function useApi(apiFn) {
       setLoading(true);
       setError(null);
       try {
-        const response = await apiFn(...args);
-        const result = response.data;
+        const result = await apiFn(...args);
+        // Result is already unwrapped by the API layer
         setData(result);
         return result;
       } catch (err) {
@@ -39,7 +39,7 @@ export function useApi(apiFn) {
 }
 
 function getErrorMessage(error) {
-  if (error.response?.data?.message) return error.response.data.message;
+  if (error.message) return error.message;
   if (error.response?.status === 401) return 'Please log in again.';
   if (error.response?.status === 403) return "You don't have permission to perform this action.";
   if (error.response?.status === 404) return 'The requested resource was not found.';
@@ -47,7 +47,7 @@ function getErrorMessage(error) {
   if (error.response?.status === 400) return 'Please check your input and try again.';
   if (error.response?.status >= 500) return 'Something went wrong. Please try again.';
   if (error.message === 'Network Error') return 'Network error. Please check your connection.';
-  return error.message || 'Something went wrong. Please try again.';
+  return 'Something went wrong. Please try again.';
 }
 
 export default useApi;

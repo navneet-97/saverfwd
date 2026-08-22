@@ -5,20 +5,6 @@ import './LandingPage.css';
 export default function LandingPage() {
   return (
     <div className="landing">
-      {/* Nav */}
-      <nav className="landing__nav">
-        <div className="container landing__nav-inner">
-          <Link to="/" className="landing__logo">
-            <span className="landing__logo-icon">🌿</span>
-            SaverFwd
-          </Link>
-          <div className="landing__nav-links">
-            <Link to="/login" className="btn btn--ghost btn--sm">Log In</Link>
-            <Link to="/register" className="btn btn--primary btn--sm">Get Started Free</Link>
-          </div>
-        </div>
-      </nav>
-
       {/* Hero */}
       <section className="landing__hero">
         <div className="landing__hero-bg">

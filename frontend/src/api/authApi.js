@@ -1,17 +1,35 @@
-import apiClient from './client';
+import apiClient, { unwrapOrThrow } from './client';
 
 const authApi = {
-  login: (credentials) => apiClient.post('/auth/login', credentials),
+  login: async (credentials) => {
+    const response = await apiClient.post('/auth/login', credentials);
+    return unwrapOrThrow(response);
+  },
 
-  register: (data) => apiClient.post('/auth/register', data),
+  register: async (data) => {
+    const response = await apiClient.post('/auth/register', data);
+    return unwrapOrThrow(response);
+  },
 
-  logout: () => apiClient.post('/auth/logout'),
+  logout: async (refreshToken) => {
+    const response = await apiClient.post('/auth/logout', { refreshToken });
+    return unwrapOrThrow(response);
+  },
 
-  forgotPassword: (email) => apiClient.post('/auth/forgot-password', { email }),
+  logoutAll: async () => {
+    const response = await apiClient.post('/auth/logout-all');
+    return unwrapOrThrow(response);
+  },
 
-  refreshToken: (refreshToken) => apiClient.post('/auth/refresh', { refreshToken }),
+  refreshToken: async (refreshToken) => {
+    const response = await apiClient.post('/auth/refresh', { refreshToken });
+    return unwrapOrThrow(response);
+  },
 
-  getCurrentUser: () => apiClient.get('/auth/me'),
+  getCurrentUser: async () => {
+    const response = await apiClient.get('/auth/me');
+    return unwrapOrThrow(response);
+  },
 };
 
 export default authApi;

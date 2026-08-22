@@ -1,35 +1,26 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, ArrowRight } from 'lucide-react';
+import { Plus, ArrowRight, Package, ShoppingBag, Leaf } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import foodApi from '../api/foodApi';
-import userApi from '../api/userApi';
 import FoodCard from '../components/food/FoodCard';
 import { SkeletonCard } from '../components/common/SkeletonLoader';
-import Button from '../components/common/Button';
 import './DashboardPage.css';
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const [listings, setListings] = useState([]);
-  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [listingsRes, statsRes] = await Promise.allSettled([
-          foodApi.getRecommendedListings(),
-          userApi.getStats(),
-        ]);
-
-        if (listingsRes.status === 'fulfilled') {
-          const data = listingsRes.value.data;
-          setListings(Array.isArray(data) ? data : data.content || []);
-        }
-        if (statsRes.status === 'fulfilled') {
-          setStats(statsRes.value.data);
-        }
+        const result = await foodApi.getListings(
+          { status: 'AVAILABLE', sort: 'createdAt', asc: false },
+          { page: 0, size: 4 }
+        );
+        const content = result?.content || [];
+        setListings(content);
       } catch {
         // Errors handled silently for dashboard
       } finally {
@@ -46,7 +37,7 @@ export default function DashboardPage() {
       {/* Welcome */}
       <div className="dashboard__welcome">
         <div className="dashboard__welcome-text">
-          <h1>Welcome back, {firstName}</h1>
+          <h1>Welcome back, {firstName} 👋</h1>
           <p>Find food to claim or share your extras with the community.</p>
         </div>
         <div className="dashboard__welcome-actions">
@@ -59,31 +50,41 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Impact */}
-      {stats && (
-        <div className="dashboard__impact">
-          <h3 className="dashboard__section-title">Your Impact</h3>
-          <div className="dashboard__impact-grid">
-            <div className="dashboard__impact-card">
-              <span className="dashboard__impact-value">{stats.foodListed ?? 0}</span>
-              <span className="dashboard__impact-label">Food Listed</span>
-            </div>
-            <div className="dashboard__impact-card">
-              <span className="dashboard__impact-value">{stats.foodClaimed ?? 0}</span>
-              <span className="dashboard__impact-label">Food Claimed</span>
-            </div>
-            <div className="dashboard__impact-card">
-              <span className="dashboard__impact-value">{stats.foodSaved ?? 0} kg</span>
-              <span className="dashboard__impact-label">Food Saved</span>
-            </div>
+      {/* Quick Stats */}
+      <div className="dashboard__stats-row">
+        <div className="dashboard__stat-card">
+          <div className="dashboard__stat-icon dashboard__stat-icon--green">
+            <Package size={20} />
+          </div>
+          <div className="dashboard__stat-info">
+            <span className="dashboard__stat-value">—</span>
+            <span className="dashboard__stat-label">Food Listed</span>
           </div>
         </div>
-      )}
+        <div className="dashboard__stat-card">
+          <div className="dashboard__stat-icon dashboard__stat-icon--blue">
+            <ShoppingBag size={20} />
+          </div>
+          <div className="dashboard__stat-info">
+            <span className="dashboard__stat-value">—</span>
+            <span className="dashboard__stat-label">Food Claimed</span>
+          </div>
+        </div>
+        <div className="dashboard__stat-card">
+          <div className="dashboard__stat-icon dashboard__stat-icon--leaf">
+            <Leaf size={20} />
+          </div>
+          <div className="dashboard__stat-info">
+            <span className="dashboard__stat-value">—</span>
+            <span className="dashboard__stat-label">Food Saved</span>
+          </div>
+        </div>
+      </div>
 
-      {/* Recommended */}
+      {/* Nearby Food */}
       <div className="dashboard__listings">
         <div className="dashboard__section-header">
-          <h3 className="dashboard__section-title">Nearby Food</h3>
+          <h3 className="dashboard__section-title">Available Food Nearby</h3>
           <Link to="/browse" className="dashboard__see-all">
             View all <ArrowRight size={16} />
           </Link>
@@ -97,16 +98,17 @@ export default function DashboardPage() {
           </div>
         ) : listings.length > 0 ? (
           <div className="dashboard__grid">
-            {listings.slice(0, 4).map((listing) => (
+            {listings.map((listing) => (
               <FoodCard key={listing.id} listing={listing} />
             ))}
           </div>
         ) : (
           <div className="dashboard__empty">
+            <span className="dashboard__empty-icon">🌱</span>
             <p>No food listings available nearby right now.</p>
-            <Button onClick={() => window.location.href = '/browse'}>
+            <Link to="/browse" className="btn btn--secondary">
               Browse All Food
-            </Button>
+            </Link>
           </div>
         )}
       </div>

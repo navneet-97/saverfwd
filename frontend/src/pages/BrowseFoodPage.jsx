@@ -13,30 +13,44 @@ export default function BrowseFoodPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
+  const [totalElements, setTotalElements] = useState(0);
 
   const [filters, setFilters] = useState({
-    foodTypes: [],
+    foodType: '',
     listingType: '',
     minPrice: '',
     maxPrice: '',
+    status: 'AVAILABLE',
   });
 
   const fetchListings = useCallback(async () => {
     setLoading(true);
     try {
-      const params = { page: page - 1, size: 12 };
-      if (searchQuery) params.q = searchQuery;
-      if (filters.listingType) params.listingType = filters.listingType;
-      if (filters.foodTypes.length > 0) params.foodTypes = filters.foodTypes.join(',');
-      if (filters.minPrice) params.minPrice = filters.minPrice;
-      if (filters.maxPrice) params.maxPrice = filters.maxPrice;
+      // Build FoodFilterRequest — these become filter.* query params
+      const filter = {};
+      if (searchQuery) filter.title = searchQuery;
+      if (filters.foodType) filter.foodType = filters.foodType;
+      if (filters.listingType) filter.listingType = filters.listingType;
+      if (filters.minPrice) filter.minPrice = Number(filters.minPrice);
+      if (filters.maxPrice) filter.maxPrice = Number(filters.maxPrice);
+      if (filters.status) filter.status = filters.status;
+      filter.sort = 'createdAt';
+      filter.asc = false;
 
-      const { data } = await foodApi.getListings(params);
-      const content = Array.isArray(data) ? data : data.content || [];
+      // Build Pageable — these become pageable.* query params
+      const pageable = {
+        page,
+        size: 12,
+      };
+
+      const result = await foodApi.getListings(filter, pageable);
+      // result is PageResponseFoodResponse: { content, page, size, totalElements, totalPages, first, last }
+      const content = result?.content || [];
       setListings(content);
-      setTotalPages(data.totalPages || Math.ceil((data.totalElements || content.length) / 12) || 1);
+      setTotalPages(result?.totalPages || 1);
+      setTotalElements(result?.totalElements || 0);
     } catch {
       setListings([]);
     } finally {
@@ -50,27 +64,21 @@ export default function BrowseFoodPage() {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setPage(1);
-    fetchListings();
+    setPage(0);
   };
 
-  const toggleFoodType = (value) => {
-    setFilters((prev) => ({
-      ...prev,
-      foodTypes: prev.foodTypes.includes(value)
-        ? prev.foodTypes.filter((t) => t !== value)
-        : [...prev.foodTypes, value],
-    }));
-    setPage(1);
+  const handleFilterChange = (key, value) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    setPage(0);
   };
 
   const clearFilters = () => {
-    setFilters({ foodTypes: [], listingType: '', minPrice: '', maxPrice: '' });
+    setFilters({ foodType: '', listingType: '', minPrice: '', maxPrice: '', status: 'AVAILABLE' });
     setSearchQuery('');
-    setPage(1);
+    setPage(0);
   };
 
-  const hasActiveFilters = filters.listingType || filters.foodTypes.length > 0 || filters.minPrice || filters.maxPrice;
+  const hasActiveFilters = filters.listingType || filters.foodType || filters.minPrice || filters.maxPrice || filters.status !== 'AVAILABLE';
 
   return (
     <div className="browse">
@@ -85,7 +93,7 @@ export default function BrowseFoodPage() {
           <Search size={18} className="browse__search-icon" />
           <input
             type="text"
-            placeholder="Search food..."
+            placeholder="Search food by title..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="browse__search-input"
@@ -96,7 +104,7 @@ export default function BrowseFoodPage() {
           onClick={() => setShowFilters(!showFilters)}
         >
           <SlidersHorizontal size={18} />
-          Filters
+          <span className="browse__filter-toggle-text">Filters</span>
           {hasActiveFilters && <span className="browse__filter-badge" />}
         </button>
       </div>
@@ -107,13 +115,19 @@ export default function BrowseFoodPage() {
           <div className="browse__filter-section">
             <h4 className="browse__filter-title">Food Type</h4>
             <div className="browse__filter-chips">
-              {FOOD_TYPES.map(({ value, label }) => (
+              <button
+                className={`browse__chip ${!filters.foodType ? 'browse__chip--active' : ''}`}
+                onClick={() => handleFilterChange('foodType', '')}
+              >
+                All
+              </button>
+              {FOOD_TYPES.map(({ value, label, icon }) => (
                 <button
                   key={value}
-                  className={`browse__chip ${filters.foodTypes.includes(value) ? 'browse__chip--active' : ''}`}
-                  onClick={() => toggleFoodType(value)}
+                  className={`browse__chip ${filters.foodType === value ? 'browse__chip--active' : ''}`}
+                  onClick={() => handleFilterChange('foodType', value)}
                 >
-                  {label}
+                  {icon} {label}
                 </button>
               ))}
             </div>
@@ -124,7 +138,7 @@ export default function BrowseFoodPage() {
             <div className="browse__filter-chips">
               <button
                 className={`browse__chip ${!filters.listingType ? 'browse__chip--active' : ''}`}
-                onClick={() => setFilters((p) => ({ ...p, listingType: '' }))}
+                onClick={() => handleFilterChange('listingType', '')}
               >
                 All
               </button>
@@ -132,7 +146,7 @@ export default function BrowseFoodPage() {
                 <button
                   key={value}
                   className={`browse__chip ${filters.listingType === value ? 'browse__chip--active' : ''}`}
-                  onClick={() => setFilters((p) => ({ ...p, listingType: value }))}
+                  onClick={() => handleFilterChange('listingType', value)}
                 >
                   {label}
                 </button>
@@ -141,23 +155,40 @@ export default function BrowseFoodPage() {
           </div>
 
           <div className="browse__filter-section">
-            <h4 className="browse__filter-title">Price Range</h4>
+            <h4 className="browse__filter-title">Price Range (₹)</h4>
             <div className="browse__price-range">
               <input
                 type="number"
                 placeholder="Min"
                 value={filters.minPrice}
-                onChange={(e) => setFilters((p) => ({ ...p, minPrice: e.target.value }))}
+                onChange={(e) => handleFilterChange('minPrice', e.target.value)}
                 className="browse__price-input"
+                min="0"
               />
               <span>—</span>
               <input
                 type="number"
                 placeholder="Max"
                 value={filters.maxPrice}
-                onChange={(e) => setFilters((p) => ({ ...p, maxPrice: e.target.value }))}
+                onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
                 className="browse__price-input"
+                min="0"
               />
+            </div>
+          </div>
+
+          <div className="browse__filter-section">
+            <h4 className="browse__filter-title">Status</h4>
+            <div className="browse__filter-chips">
+              {['AVAILABLE', 'RESERVED', 'SOLD', 'CLAIMED', 'EXPIRED', 'CANCELLED'].map((status) => (
+                <button
+                  key={status}
+                  className={`browse__chip ${filters.status === status ? 'browse__chip--active' : ''}`}
+                  onClick={() => handleFilterChange('status', status)}
+                >
+                  {status.charAt(0) + status.slice(1).toLowerCase()}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -168,6 +199,11 @@ export default function BrowseFoodPage() {
             </button>
           )}
         </div>
+      )}
+
+      {/* Results count */}
+      {!loading && totalElements > 0 && (
+        <p className="browse__results-count">{totalElements} {totalElements === 1 ? 'listing' : 'listings'} found</p>
       )}
 
       {/* Results */}
@@ -186,16 +222,16 @@ export default function BrowseFoodPage() {
           </div>
           <div className="browse__pagination">
             <Pagination
-              currentPage={page}
+              currentPage={page + 1}
               totalPages={totalPages}
-              onPageChange={setPage}
+              onPageChange={(p) => setPage(p - 1)}
             />
           </div>
         </>
       ) : (
         <EmptyState
           title="No food listings found"
-          description="Try adjusting your search or filters to find available food."
+          description={hasActiveFilters ? 'Try adjusting your filters to find available food.' : 'No food listings available right now.'}
           actionLabel={hasActiveFilters ? 'Clear Filters' : undefined}
           onAction={hasActiveFilters ? clearFilters : undefined}
         />

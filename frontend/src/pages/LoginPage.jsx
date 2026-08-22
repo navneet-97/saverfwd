@@ -32,7 +32,9 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      await login(formData);
+      // Backend login expects { username, password }
+      // We send email as the username field
+      await login({ username: formData.email, password: formData.password });
       toast.success('Welcome back!');
       navigate('/dashboard');
     } catch (err) {
@@ -132,12 +134,6 @@ export default function LoginPage() {
               required
               autoComplete="current-password"
             />
-
-            <div className="auth-form__row">
-              <Link to="/forgot-password" className="auth-form__link">
-                Forgot Password?
-              </Link>
-            </div>
 
             <Button type="submit" fullWidth loading={loading} size="lg">
               Log In

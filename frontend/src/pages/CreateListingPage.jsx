@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { MapPin, Loader2 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import foodApi from '../api/foodApi';
 import { validateFoodListing } from '../utils/validators';
@@ -20,30 +21,84 @@ export default function CreateListingPage() {
     unit: '',
     listingType: '',
     price: '',
+    // Combined datetime fields
     expiryDate: '',
     expiryTime: '',
-    pickupAddress: '',
+    pickupStartDate: '',
     pickupStartTime: '',
+    pickupEndDate: '',
     pickupEndTime: '',
-    image: null,
+    pickupAddress: '',
+    latitude: '',
+    longitude: '',
   });
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [geoLoading, setGeoLoading] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (files) {
-      setFormData((prev) => ({ ...prev, [name]: files[0] }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
+  };
+
+  // Try to get user's geolocation
+  const handleGetLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported by your browser.');
+      return;
+    }
+    setGeoLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setFormData((prev) => ({
+          ...prev,
+          latitude: position.coords.latitude.toFixed(6),
+          longitude: position.coords.longitude.toFixed(6),
+        }));
+        setGeoLoading(false);
+        toast.success('Location detected!');
+      },
+      () => {
+        setGeoLoading(false);
+        toast.error('Unable to get your location. Please enter coordinates manually.');
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const validationErrors = validateFoodListing(formData);
+
+    // Build the submit payload with ISO datetime strings
+    const expiryDateTime = formData.expiryDate && formData.expiryTime
+      ? `${formData.expiryDate}T${formData.expiryTime}:00`
+      : '';
+    const pickupStartDateTime = formData.pickupStartDate && formData.pickupStartTime
+      ? `${formData.pickupStartDate}T${formData.pickupStartTime}:00`
+      : '';
+    const pickupEndDateTime = formData.pickupEndDate && formData.pickupEndTime
+      ? `${formData.pickupEndDate}T${formData.pickupEndTime}:00`
+      : '';
+
+    const submitData = {
+      title: formData.title,
+      description: formData.description || '',
+      foodType: formData.foodType,
+      quantity: Number(formData.quantity),
+      unit: formData.unit,
+      listingType: formData.listingType,
+      ...(formData.listingType === 'SALE' && { price: Number(formData.price) }),
+      expiryTime: expiryDateTime,
+      pickupStartTime: pickupStartDateTime,
+      pickupEndTime: pickupEndDateTime,
+      pickupAddress: formData.pickupAddress,
+      latitude: Number(formData.latitude),
+      longitude: Number(formData.longitude),
+    };
+
+    const validationErrors = validateFoodListing(submitData);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       toast.error('Please fix the errors below.');
@@ -52,16 +107,6 @@ export default function CreateListingPage() {
 
     setLoading(true);
     try {
-      const submitData = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value !== null && value !== '' && key !== 'image') {
-          submitData.append(key, value);
-        }
-      });
-      if (formData.image) {
-        submitData.append('image', formData.image);
-      }
-
       await foodApi.createListing(submitData);
       toast.success('Food listing created successfully!');
       navigate('/my-listings');
@@ -98,7 +143,7 @@ export default function CreateListingPage() {
             onChange={handleChange}
             error={errors.title}
             required
-            maxLength={100}
+            maxLength={50}
           />
 
           <Textarea
@@ -108,7 +153,7 @@ export default function CreateListingPage() {
             value={formData.description}
             onChange={handleChange}
             error={errors.description}
-            maxLength={1000}
+            maxLength={400}
           />
 
           <Select
@@ -161,6 +206,7 @@ export default function CreateListingPage() {
                 checked={formData.listingType === 'DONATION'}
                 onChange={handleChange}
               />
+              <span className="create-listing__type-emoji">🎁</span>
               <span className="create-listing__type-label">Donation</span>
               <span className="create-listing__type-desc">Free for those who need it</span>
             </label>
@@ -172,6 +218,7 @@ export default function CreateListingPage() {
                 checked={formData.listingType === 'SALE'}
                 onChange={handleChange}
               />
+              <span className="create-listing__type-emoji">💰</span>
               <span className="create-listing__type-label">Sale</span>
               <span className="create-listing__type-desc">Sell at a reduced price</span>
             </label>
@@ -180,7 +227,7 @@ export default function CreateListingPage() {
 
           {!isDonation && formData.listingType === 'SALE' && (
             <Input
-              label="Price"
+              label="Price (₹)"
               name="price"
               type="number"
               placeholder="0"
@@ -205,6 +252,7 @@ export default function CreateListingPage() {
               value={formData.expiryDate}
               onChange={handleChange}
               error={errors.expiryDate}
+              min={new Date().toISOString().split('T')[0]}
               required
             />
             <Input
@@ -221,12 +269,12 @@ export default function CreateListingPage() {
 
         {/* Pickup */}
         <section className="create-listing__section">
-          <h2>Pickup</h2>
+          <h2>Pickup Details</h2>
 
           <Input
             label="Pickup Address"
             name="pickupAddress"
-            placeholder="e.g., Connaught Place, New Delhi"
+            placeholder="e.g., Connaught Place, New Delhi (min 10 characters)"
             value={formData.pickupAddress}
             onChange={handleChange}
             error={errors.pickupAddress}
@@ -235,12 +283,34 @@ export default function CreateListingPage() {
 
           <div className="create-listing__row">
             <Input
+              label="Pickup Start Date"
+              name="pickupStartDate"
+              type="date"
+              value={formData.pickupStartDate}
+              onChange={handleChange}
+              error={errors.pickupStartTime}
+              min={new Date().toISOString().split('T')[0]}
+              required
+            />
+            <Input
               label="Pickup Start Time"
               name="pickupStartTime"
               type="time"
               value={formData.pickupStartTime}
               onChange={handleChange}
-              error={errors.pickupStartTime}
+              required
+            />
+          </div>
+
+          <div className="create-listing__row">
+            <Input
+              label="Pickup End Date"
+              name="pickupEndDate"
+              type="date"
+              value={formData.pickupEndDate}
+              onChange={handleChange}
+              error={errors.pickupEndTime}
+              min={formData.pickupStartDate || new Date().toISOString().split('T')[0]}
               required
             />
             <Input
@@ -249,31 +319,57 @@ export default function CreateListingPage() {
               type="time"
               value={formData.pickupEndTime}
               onChange={handleChange}
-              error={errors.pickupEndTime}
               required
             />
           </div>
-        </section>
 
-        {/* Image */}
-        <section className="create-listing__section">
-          <h2>Photo (Optional)</h2>
-          <div className="create-listing__image-upload">
-            <input
-              type="file"
-              name="image"
-              accept="image/*"
-              onChange={handleChange}
-              id="image-upload"
-              className="create-listing__file-input"
-            />
-            <label htmlFor="image-upload" className="create-listing__file-label">
-              {formData.image ? (
-                <span>{formData.image.name}</span>
-              ) : (
-                <span>Click to upload a photo</span>
-              )}
-            </label>
+          {/* Location */}
+          <div className="create-listing__location">
+            <div className="create-listing__location-header">
+              <h3>Location</h3>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleGetLocation}
+                disabled={geoLoading}
+              >
+                {geoLoading ? (
+                  <><Loader2 size={16} className="spin" /> Detecting...</>
+                ) : (
+                  <><MapPin size={16} /> Use My Location</>
+                )}
+              </Button>
+            </div>
+
+            <div className="create-listing__row">
+              <Input
+                label="Latitude"
+                name="latitude"
+                type="number"
+                placeholder="e.g., 28.6315"
+                step="any"
+                min="-90"
+                max="90"
+                value={formData.latitude}
+                onChange={handleChange}
+                error={errors.latitude}
+                required
+              />
+              <Input
+                label="Longitude"
+                name="longitude"
+                type="number"
+                placeholder="e.g., 77.2167"
+                step="any"
+                min="-180"
+                max="180"
+                value={formData.longitude}
+                onChange={handleChange}
+                error={errors.longitude}
+                required
+              />
+            </div>
           </div>
         </section>
 

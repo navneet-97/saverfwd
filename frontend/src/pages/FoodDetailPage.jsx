@@ -1,20 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { MapPin, Clock, Calendar, User, Navigation, MessageSquare, ArrowLeft } from 'lucide-react';
+import { MapPin, Clock, Calendar, User, Navigation, MessageSquare, ArrowLeft, Leaf } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import foodApi from '../api/foodApi';
-import orderApi from '../api/orderApi';
-import StarRating from '../components/common/StarRating';
 import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
-import Modal from '../components/common/Modal';
 import { SkeletonText } from '../components/common/SkeletonLoader';
-import { CURRENCY_SYMBOL, STATUS_COLORS, getFoodTypeLabel, getUnitLabel } from '../utils/constants';
+import { CURRENCY_SYMBOL, STATUS_COLORS, getFoodTypeLabel, getUnitLabel, getFoodTypeIcon } from '../utils/constants';
 import { formatDate, formatTime, getTimeUntil, formatDateTime } from '../utils/formatters';
 import './FoodDetailPage.css';
-
-const FOOD_PLACEHOLDER = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="400" fill="%23f3f4f6"%3E%3Crect width="800" height="400"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="%239ca3af" font-family="sans-serif" font-size="20"%3ENo Image%3C/text%3E%3C/svg%3E';
 
 export default function FoodDetailPage() {
   const { id } = useParams();
@@ -24,17 +19,18 @@ export default function FoodDetailPage() {
 
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [actionType, setActionType] = useState('');
 
   useEffect(() => {
     const fetchListing = async () => {
       try {
-        const { data } = await foodApi.getListing(id);
+        const data = await foodApi.getListing(id);
         setListing(data);
-      } catch {
-        toast.error('Failed to load food listing.');
+      } catch (err) {
+        if (err.response?.status === 404) {
+          toast.error('This food listing no longer exists.');
+        } else {
+          toast.error('Failed to load food listing.');
+        }
         navigate('/browse');
       } finally {
         setLoading(false);
@@ -43,44 +39,11 @@ export default function FoodDetailPage() {
     fetchListing();
   }, [id, navigate, toast]);
 
-  const handleAction = async () => {
-    setActionLoading(true);
-    try {
-      if (actionType === 'claim') {
-        await orderApi.claimFood(id);
-        toast.success('Food claimed successfully!');
-      } else {
-        await orderApi.purchaseFood(id);
-        toast.success('Purchase completed!');
-      }
-      const { data } = await foodApi.getListing(id);
-      setListing(data);
-      setShowConfirmModal(false);
-      navigate('/orders');
-    } catch (err) {
-      if (err.status === 409) {
-        toast.error('Sorry, this food has already been claimed.');
-        const { data } = await foodApi.getListing(id);
-        setListing(data);
-      } else {
-        toast.error(err.message || 'Action failed. Please try again.');
-      }
-    } finally {
-      setActionLoading(false);
-      setShowConfirmModal(false);
-    }
-  };
-
-  const openConfirmModal = (type) => {
-    setActionType(type);
-    setShowConfirmModal(true);
-  };
-
   if (loading) {
     return (
       <div className="food-detail">
         <div className="food-detail__image-wrap">
-          <div className="skeleton skeleton--image" style={{ height: 400 }} />
+          <div className="skeleton skeleton--image" style={{ height: 300 }} />
         </div>
         <div className="food-detail__content">
           <SkeletonText width="50%" height="1.5rem" />
@@ -95,9 +58,7 @@ export default function FoodDetailPage() {
   if (!listing) return null;
 
   const isDonation = listing.listingType === 'DONATION';
-  const isOwner = user?.id === listing.userId || user?.id === listing.user?.id;
-  const expiryDateTime = listing.expiryDate && listing.expiryTime
-    ? `${listing.expiryDate}T${listing.expiryTime}` : listing.expiryDate;
+  const isOwner = user?.id === listing.ownerId;
   const statusStyle = STATUS_COLORS[listing.status] || STATUS_COLORS.AVAILABLE;
   const canClaim = listing.status === 'AVAILABLE' && !isOwner;
 
@@ -107,153 +68,142 @@ export default function FoodDetailPage() {
         <ArrowLeft size={20} /> Back
       </button>
 
-      <div className="food-detail__layout">
-        <div className="food-detail__image-wrap">
-          <img
-            src={listing.imageUrl || FOOD_PLACEHOLDER}
-            alt={listing.title}
-            className="food-detail__image"
-          />
-          {listing.status && listing.status !== 'AVAILABLE' && (
-            <Badge color={statusStyle.color} bg={statusStyle.bg} className="food-detail__status">
-              {listing.status}
-            </Badge>
-          )}
+      {/* Food Image / Placeholder */}
+      <div className="food-detail__image-wrap">
+        <div className="food-detail__image-placeholder">
+          <span className="food-detail__food-icon">{getFoodTypeIcon(listing.foodType)}</span>
         </div>
+        {listing.status && listing.status !== 'AVAILABLE' && (
+          <Badge color={statusStyle.text} bg={statusStyle.bg} className="food-detail__status">
+            {listing.status}
+          </Badge>
+        )}
+      </div>
 
-        <div className="food-detail__sidebar">
-          <div className="food-detail__content">
-            <div className="food-detail__title-row">
+      <div className="food-detail__layout">
+        <div className="food-detail__main">
+          <div className="food-detail__title-row">
+            <div>
               <h1 className="food-detail__title">{listing.title}</h1>
+              <div className="food-detail__meta">
+                <span>{getFoodTypeLabel(listing.foodType)}</span>
+                <span>·</span>
+                <span>{listing.quantity} {getUnitLabel(listing.unit)}</span>
+              </div>
+            </div>
+            <div className="food-detail__price-col">
               {isDonation ? (
-                <span className="food-detail__price food-detail__price--free">FREE</span>
+                <span className="food-detail__price food-detail__price--free">
+                  <Leaf size={16} /> FREE
+                </span>
               ) : (
                 <span className="food-detail__price">{CURRENCY_SYMBOL}{listing.price}</span>
               )}
             </div>
+          </div>
 
-            <div className="food-detail__meta">
-              <span>{getFoodTypeLabel(listing.foodType)}</span>
-              <span>·</span>
-              <span>{listing.quantity} {getUnitLabel(listing.unit)}</span>
-            </div>
-
-            {listing.description && (
-              <div className="food-detail__section">
-                <h3>Description</h3>
-                <p>{listing.description}</p>
-              </div>
-            )}
-
+          {listing.description && (
             <div className="food-detail__section">
-              <h3>Pickup</h3>
+              <h3>Description</h3>
+              <p>{listing.description}</p>
+            </div>
+          )}
+
+          <div className="food-detail__section">
+            <h3>Pickup Details</h3>
+            <div className="food-detail__info-card">
               <div className="food-detail__info-item">
                 <MapPin size={16} />
-                <span>{listing.pickupAddress}</span>
+                <div>
+                  <span className="food-detail__info-label">Address</span>
+                  <span className="food-detail__info-value">{listing.pickupAddress}</span>
+                </div>
               </div>
               {listing.pickupStartTime && (
                 <div className="food-detail__info-item">
                   <Clock size={16} />
-                  <span>
-                    {formatDate(listing.pickupStartTime || listing.pickupDate)}{' '}
-                    {formatTime(listing.pickupStartTime)}
-                    {listing.pickupEndTime && ` – ${formatTime(listing.pickupEndTime)}`}
-                  </span>
+                  <div>
+                    <span className="food-detail__info-label">Pickup Window</span>
+                    <span className="food-detail__info-value">
+                      {formatDate(listing.pickupStartTime)} · {formatTime(listing.pickupStartTime)}
+                      {listing.pickupEndTime && ` – ${formatTime(listing.pickupEndTime)}`}
+                    </span>
+                  </div>
+                </div>
+              )}
+              {listing.expiryTime && (
+                <div className="food-detail__info-item">
+                  <Calendar size={16} />
+                  <div>
+                    <span className="food-detail__info-label">Expires</span>
+                    <span className="food-detail__info-value">
+                      {formatDateTime(listing.expiryTime)} ({getTimeUntil(listing.expiryTime)})
+                    </span>
+                  </div>
                 </div>
               )}
             </div>
-
-            {expiryDateTime && (
-              <div className="food-detail__section">
-                <h3>Expires</h3>
-                <div className="food-detail__info-item">
-                  <Calendar size={16} />
-                  <span>{formatDateTime(expiryDateTime)} ({getTimeUntil(expiryDateTime)})</span>
-                </div>
-              </div>
-            )}
-
-            {listing.user && (
-              <div className="food-detail__section">
-                <h3>Listed by</h3>
-                <div className="food-detail__user">
-                  <div className="food-detail__user-avatar">
-                    {listing.user.profilePicture ? (
-                      <img src={listing.user.profilePicture} alt="" />
-                    ) : (
-                      <User size={20} />
-                    )}
-                  </div>
-                  <div>
-                    <span className="food-detail__user-name">{listing.user.fullName}</span>
-                    {listing.user.rating && (
-                      <div className="food-detail__user-rating">
-                        <StarRating rating={listing.user.rating} size={14} readonly />
-                        <span>{listing.user.rating}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* Actions */}
-          <div className="food-detail__actions">
+          {/* Listed by */}
+          <div className="food-detail__section">
+            <h3>Listed by</h3>
+            <div className="food-detail__user">
+              <div className="food-detail__user-avatar">
+                <User size={20} />
+              </div>
+              <div>
+                <span className="food-detail__user-name">User #{listing.ownerId}</span>
+                <span className="food-detail__user-id">Listing ID: {listing.id}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Sidebar Actions */}
+        <div className="food-detail__sidebar">
+          <div className="food-detail__actions-card">
             {canClaim && (
               <>
-                <Button
-                  fullWidth
-                  size="lg"
-                  onClick={() => openConfirmModal(isDonation ? 'claim' : 'purchase')}
-                >
-                  {isDonation ? 'Claim Food' : 'Purchase Food'}
-                </Button>
-                <Button fullWidth variant="secondary" size="lg" as={Link} to="/messages">
-                  <MessageSquare size={18} /> Message User
-                </Button>
-                {listing.pickupAddress && (
-                  <Button
-                    fullWidth
-                    variant="ghost"
-                    onClick={() => window.open(`https://maps.google.com/?q=${encodeURIComponent(listing.pickupAddress)}`, '_blank')}
-                  >
-                    <Navigation size={18} /> Get Directions
+                {isDonation ? (
+                  <Button fullWidth size="lg" disabled>
+                    Claim Food (Coming Soon)
+                  </Button>
+                ) : (
+                  <Button fullWidth size="lg" disabled>
+                    Purchase Food (Coming Soon)
                   </Button>
                 )}
+                <Button fullWidth variant="secondary" as={Link} to="/messages">
+                  <MessageSquare size={18} /> Message User
+                </Button>
               </>
             )}
+
             {isOwner && (
-              <Button fullWidth variant="secondary" as={Link} to={`/my-listings`}>
+              <Button fullWidth variant="secondary" as={Link} to="/my-listings">
                 Manage Listing
+              </Button>
+            )}
+
+            {!canClaim && !isOwner && (
+              <p className="food-detail__unavailable">
+                This food is no longer available.
+              </p>
+            )}
+
+            {listing.pickupAddress && (
+              <Button
+                fullWidth
+                variant="ghost"
+                onClick={() => window.open(`https://maps.google.com/?q=${encodeURIComponent(listing.pickupAddress)}`, '_blank')}
+              >
+                <Navigation size={18} /> Get Directions
               </Button>
             )}
           </div>
         </div>
       </div>
-
-      {/* Confirm Modal */}
-      <Modal
-        isOpen={showConfirmModal}
-        onClose={() => setShowConfirmModal(false)}
-        title={actionType === 'claim' ? 'Confirm Claim' : 'Confirm Purchase'}
-      >
-        <div className="food-detail__confirm">
-          <p>
-            {actionType === 'claim'
-              ? `You are about to claim "${listing.title}". Are you sure?`
-              : `You are about to purchase "${listing.title}" for ${CURRENCY_SYMBOL}${listing.price}. Continue?`}
-          </p>
-          <div className="food-detail__confirm-actions">
-            <Button variant="ghost" onClick={() => setShowConfirmModal(false)}>
-              Cancel
-            </Button>
-            <Button loading={actionLoading} onClick={handleAction}>
-              {actionType === 'claim' ? 'Confirm Claim' : 'Confirm Purchase'}
-            </Button>
-          </div>
-        </div>
-      </Modal>
     </div>
   );
 }

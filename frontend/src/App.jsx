@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
+import Header from './components/layout/Header';
 import AppLayout from './components/layout/AppLayout';
 import ToastContainer from './components/common/Toast';
 import LandingPage from './pages/LandingPage';
@@ -24,12 +25,16 @@ function ProtectedRoute() {
     return (
       <div style={{
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         height: '100vh',
-        color: 'var(--color-text-muted)',
+        gap: '12px',
       }}>
-        Loading...
+        <span style={{ fontSize: '2rem' }}>🌿</span>
+        <span style={{ color: 'var(--color-text-muted)', fontSize: 'var(--font-size-sm)' }}>
+          Loading SaverFwd...
+        </span>
       </div>
     );
   }
@@ -55,6 +60,7 @@ function App() {
     <BrowserRouter>
       <ToastProvider>
         <AuthProvider>
+          <Header />
           <Routes>
             {/* Public routes */}
             <Route element={<PublicRoute />}>
@@ -72,7 +78,6 @@ function App() {
               <Route path="/create-listing" element={<CreateListingPage />} />
               <Route path="/my-listings" element={<MyListingsPage />} />
               <Route path="/orders" element={<OrdersPage />} />
-              <Route path="/orders/:id" element={<OrdersPage />} />
               <Route path="/messages" element={<MessagesPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/notifications" element={<NotificationsPage />} />

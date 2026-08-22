@@ -1,5 +1,5 @@
 .auth-page {
-  min-height: 100vh;
+  min-height: calc(100vh - var(--header-height));
   display: flex;
   background: var(--color-bg);
 }
@@ -264,5 +264,12 @@
     border-radius: var(--radius-xl);
     padding: var(--space-8);
     box-shadow: var(--shadow-md);
+  }
+}
+
+/* On mobile, hide the bottom nav padding for auth pages */
+@media (max-width: 767px) {
+  .auth-page {
+    min-height: calc(100vh - var(--header-height));
   }
 }

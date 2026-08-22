@@ -7,6 +7,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Fetch current user from /api/auth/me
   const fetchUser = useCallback(async () => {
     const token = localStorage.getItem('accessToken');
     if (!token) {
@@ -14,8 +15,9 @@ export function AuthProvider({ children }) {
       return;
     }
     try {
-      const { data } = await authApi.getCurrentUser();
-      setUser(data);
+      // Backend returns ApiResponseUserResponse: { success, message, data: UserResponse }
+      const userData = await authApi.getCurrentUser();
+      setUser(userData);
     } catch {
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
@@ -30,34 +32,47 @@ export function AuthProvider({ children }) {
   }, [fetchUser]);
 
   const login = async (credentials) => {
-    const { data } = await authApi.login(credentials);
-    const token = data.accessToken || data.token;
-    if (token) localStorage.setItem('accessToken', token);
-    if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
-    if (data.user) {
-      setUser(data.user);
+    // Backend expects { username, password } — login form sends email as username
+    const authData = await authApi.login(credentials);
+    // Backend returns: { success, message, data: UserResponse, tokens: TokenResponse }
+    const accessToken = authData.tokens?.accessToken;
+    const refreshToken = authData.tokens?.refreshToken;
+
+    if (accessToken) localStorage.setItem('accessToken', accessToken);
+    if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
+
+    // authData.data is the UserResponse
+    if (authData.data) {
+      setUser(authData.data);
     } else {
       await fetchUser();
     }
-    return data;
+    return authData;
   };
 
-  const register = async (data) => {
-    const { data: result } = await authApi.register(data);
-    const token = result.accessToken || result.token;
-    if (token) localStorage.setItem('accessToken', token);
-    if (result.refreshToken) localStorage.setItem('refreshToken', result.refreshToken);
-    if (result.user) {
-      setUser(result.user);
+  const register = async (registerData) => {
+    // Backend expects { fullName, email, password, phoneNumber }
+    const authData = await authApi.register(registerData);
+    const accessToken = authData.tokens?.accessToken;
+    const refreshToken = authData.tokens?.refreshToken;
+
+    if (accessToken) localStorage.setItem('accessToken', accessToken);
+    if (refreshToken) localStorage.setItem('refreshToken', refreshToken);
+
+    if (authData.data) {
+      setUser(authData.data);
     } else {
       await fetchUser();
     }
-    return result;
+    return authData;
   };
 
   const logout = async () => {
+    const refreshToken = localStorage.getItem('refreshToken');
     try {
-      await authApi.logout();
+      if (refreshToken) {
+        await authApi.logout(refreshToken);
+      }
     } catch {
       // Ignore errors on logout
     }

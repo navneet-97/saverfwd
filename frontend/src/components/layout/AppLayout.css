@@ -8,3 +8,10 @@
   flex: 1;
   padding: var(--space-8) 0;
 }
+
+/* Add padding on mobile for bottom navigation */
+@media (max-width: 767px) {
+  .app-layout__main {
+    padding-bottom: calc(var(--space-8) + 80px);
+  }
+}

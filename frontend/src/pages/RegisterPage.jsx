@@ -39,6 +39,9 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const { confirmPassword: _, ...submitData } = formData;
+      // Backend expects { fullName, email, password, phoneNumber }
+      // Strip non-digits from phone for backend pattern ^[6-9]\d{9}$
+      submitData.phoneNumber = submitData.phoneNumber.replace(/\D/g, '');
       await register(submitData);
       toast.success('Account created! Welcome to SaverFwd.');
       navigate('/dashboard');
@@ -115,7 +118,7 @@ export default function RegisterPage() {
             <Input
               label="Full Name"
               name="fullName"
-              placeholder="Your full name"
+              placeholder="Your full name (min 3 characters)"
               value={formData.fullName}
               onChange={handleChange}
               error={errors.fullName}
@@ -139,7 +142,7 @@ export default function RegisterPage() {
               label="Phone Number"
               name="phoneNumber"
               type="tel"
-              placeholder="+91 98765 43210"
+              placeholder="9876543210 (10 digits)"
               value={formData.phoneNumber}
               onChange={handleChange}
               error={errors.phoneNumber}
@@ -151,7 +154,7 @@ export default function RegisterPage() {
               label="Password"
               name="password"
               type="password"
-              placeholder="At least 6 characters"
+              placeholder="8+ chars, upper, lower, digit, special"
               value={formData.password}
               onChange={handleChange}
               error={errors.password}

@@ -1,6 +1,6 @@
 import './SkeletonLoader.css';
 
-export function SkeletonText({ width, height = '1rem', className = '' }) {
+export function SkeletonText({ width, height = '1rem' }) {
   return (
     <div
       className="skeleton skeleton--text"
@@ -9,7 +9,7 @@ export function SkeletonText({ width, height = '1rem', className = '' }) {
   );
 }
 
-export function SkeletonCircle({ size = 40, className = '' }) {
+export function SkeletonCircle({ size = 40 }) {
   return (
     <div
       className="skeleton skeleton--circle"

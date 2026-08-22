@@ -1,18 +1,45 @@
-import apiClient from './client';
+import apiClient, { unwrapOrThrow } from './client';
+
+/**
+ * Build query params with proper prefix nesting for Spring Boot @ModelAttribute binding.
+ * Backend expects: ?filter.email=xyz&pageable.page=0&pageable.size=12
+ */
+function buildParams(filter = {}, pageable = {}) {
+  const params = {};
+
+  Object.entries(filter).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      params[`filter.${key}`] = value;
+    }
+  });
+
+  Object.entries(pageable).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      params[`pageable.${key}`] = value;
+    }
+  });
+
+  return params;
+}
 
 const userApi = {
-  getProfile: () => apiClient.get('/users/profile'),
+  /**
+   * GET /api/users
+   * Query params: filter (UserFilterRequest) + pageable (Pageable)
+   */
+  getUsers: async (filter = {}, pageable = { page: 0, size: 20 }) => {
+    const params = buildParams(filter, pageable);
+    const response = await apiClient.get('/users', { params });
+    return unwrapOrThrow(response);
+  },
 
-  getPublicProfile: (userId) => apiClient.get(`/users/${userId}`),
-
-  updateProfile: (data) => apiClient.put('/users/profile', data),
-
-  updateProfilePicture: (formData) =>
-    apiClient.post('/users/profile/picture', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    }),
-
-  getStats: () => apiClient.get('/users/stats'),
+  /**
+   * DELETE /api/users/{userId}
+   */
+  deleteUser: async (userId) => {
+    const response = await apiClient.delete(`/users/${userId}`);
+    return unwrapOrThrow(response);
+  },
 };
 
 export default userApi;
