@@ -1,0 +1,9 @@
+spring:
+  profiles:
+    active: dev
+
+  data:
+    mysql:
+      uri:
+      database:
+      auto-index-creation: true

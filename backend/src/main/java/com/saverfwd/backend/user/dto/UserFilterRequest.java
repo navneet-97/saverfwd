@@ -1,9 +1,11 @@
 package com.saverfwd.backend.user.dto;
 
+import lombok.Builder;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
+@Builder
 public record UserFilterRequest(
         Long id,
         String fullName,
