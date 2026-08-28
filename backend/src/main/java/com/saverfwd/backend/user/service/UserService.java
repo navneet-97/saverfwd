@@ -1,5 +1,6 @@
 package com.saverfwd.backend.user.service;
 
+import com.saverfwd.backend.common.exception.ResourceNotFoundException;
 import com.saverfwd.backend.common.mapper.Mapper;
 import com.saverfwd.backend.common.response.ApiResponse;
 import com.saverfwd.backend.common.response.PageResponse;
@@ -33,6 +34,9 @@ public class UserService {
     }
 
     public ApiResponse<Void> deleteUser(Long userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("No user exist with id: %s", userId)));
+
         userRepository.deleteById(userId);
         return Mapper.toApiResponse("User Deleted", null);
     }
