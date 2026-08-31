@@ -5,7 +5,7 @@ import com.saverfwd.backend.common.exception.BusinessException;
 import com.saverfwd.backend.common.exception.ResourceNotFoundException;
 import com.saverfwd.backend.common.mapper.Mapper;
 import com.saverfwd.backend.common.response.PageResponse;
-import com.saverfwd.backend.common.utils.Common;
+import com.saverfwd.backend.common.util.Common;
 import com.saverfwd.backend.food.dto.FoodFilterRequest;
 import com.saverfwd.backend.food.dto.FoodResponse;
 import com.saverfwd.backend.food.dto.CreateFoodRequest;

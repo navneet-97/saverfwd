@@ -5,7 +5,7 @@ import com.saverfwd.backend.auth.repository.RefreshTokenRepository;
 import com.saverfwd.backend.auth.security.JwtService;
 import com.saverfwd.backend.common.exception.BusinessException;
 import com.saverfwd.backend.common.exception.ResourceNotFoundException;
-import com.saverfwd.backend.common.utils.Common;
+import com.saverfwd.backend.common.util.Common;
 import com.saverfwd.backend.user.entity.User;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

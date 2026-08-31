@@ -1,0 +1,62 @@
+package com.saverfwd.backend.order.service;
+
+import com.saverfwd.backend.common.exception.ResourceNotFoundException;
+import com.saverfwd.backend.common.util.Common;
+import com.saverfwd.backend.food.entity.FoodItem;
+import com.saverfwd.backend.food.enums.ListingType;
+import com.saverfwd.backend.food.repository.FoodRepository;
+import com.saverfwd.backend.order.dto.OrderFoodRequest;
+import com.saverfwd.backend.order.entity.Order;
+import com.saverfwd.backend.order.enums.OrderStatus;
+import com.saverfwd.backend.order.mapper.OrderMapper;
+import com.saverfwd.backend.order.repository.OrderRepository;
+import com.saverfwd.backend.user.entity.User;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.math.MathContext;
+
+@Service
+@RequiredArgsConstructor
+public class OrderService {
+    
+    private final OrderRepository orderRepository;
+    private final FoodRepository foodRepository;
+    private final OrderMapper orderMapper;
+    
+    @Transactional
+    public void orderFood(OrderFoodRequest request) {
+        User currentUser = Common.getCurrentUser();
+        
+        FoodItem savedFoodItem = foodRepository.findById(request.foodItem().getId()).map(
+                foodItem -> {
+                    if (request.quantity().compareTo(foodItem.getQuantity())>0){
+                        throw new IllegalArgumentException("Such quantity is not available");
+                    }
+                    BigDecimal unitPrice = foodItem.getPrice().divide(request.quantity(), MathContext.DECIMAL32);
+                    BigDecimal totalAmount = getTotalAmount(foodItem, unitPrice, request);
+
+                    Order newOrder = orderMapper.toOrder(request);
+                    newOrder.setCustomer(currentUser);
+                    newOrder.setStatus(OrderStatus.PENDING);
+                    newOrder.setTotalAmount(totalAmount);
+                    newOrder.setUnitPrice(unitPrice);
+                    Order savedOrder = orderRepository.save(newOrder);
+
+                    foodItem.setQuantity(foodItem.getQuantity().subtract(request.quantity()));
+                    foodRepository.save(foodItem);
+                    return foodItem;
+                }
+        ).orElseThrow(() -> new ResourceNotFoundException(String.format("FoodItem with %s does not exist", request.foodItem().getId())));
+    }
+
+    private BigDecimal getTotalAmount(FoodItem foodItem, BigDecimal unitPrice, OrderFoodRequest request) {
+        if (foodItem.getListingType() == ListingType.SALE) {
+            return request.quantity().multiply(unitPrice);
+        } else {
+            return BigDecimal.ZERO;
+        }
+    }
+}

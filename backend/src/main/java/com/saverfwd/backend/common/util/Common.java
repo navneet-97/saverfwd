@@ -1,4 +1,4 @@
-package com.saverfwd.backend.common.utils;
+package com.saverfwd.backend.common.util;
 
 import com.saverfwd.backend.auth.security.CustomUserDetails;
 import com.saverfwd.backend.common.exception.BusinessException;

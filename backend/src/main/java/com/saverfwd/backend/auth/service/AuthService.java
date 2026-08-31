@@ -11,7 +11,7 @@ import com.saverfwd.backend.common.exception.DuplicateResourceException;
 import com.saverfwd.backend.common.exception.ResourceNotFoundException;
 import com.saverfwd.backend.common.mapper.Mapper;
 import com.saverfwd.backend.common.response.ApiResponse;
-import com.saverfwd.backend.common.utils.Common;
+import com.saverfwd.backend.common.util.Common;
 import com.saverfwd.backend.user.dto.UserResponse;
 import com.saverfwd.backend.user.entity.User;
 import com.saverfwd.backend.user.mapper.UserMapper;

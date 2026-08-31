@@ -1,7 +1,7 @@
 package com.saverfwd.backend.auth.security;
 
 import com.saverfwd.backend.common.constant.JwtConstants;
-import com.saverfwd.backend.common.utils.Common;
+import com.saverfwd.backend.common.util.Common;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
