@@ -1,17 +1,19 @@
 package com.saverfwd.backend.order.controller;
 
+import com.saverfwd.backend.common.mapper.Mapper;
 import com.saverfwd.backend.common.response.ApiResponse;
+import com.saverfwd.backend.common.response.PageResponse;
 import com.saverfwd.backend.order.dto.OrderFoodRequest;
+import com.saverfwd.backend.order.dto.OrderSearchFilter;
 import com.saverfwd.backend.order.response.OrderResponse;
 import com.saverfwd.backend.order.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -24,5 +26,16 @@ public class OrderController {
     public ResponseEntity<ApiResponse<OrderResponse>> orderFood(@Valid @RequestBody OrderFoodRequest orderFoodRequest) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(orderService.orderFood(orderFoodRequest));
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<PageResponse<OrderResponse>>> getOrders(
+            @Valid @ModelAttribute OrderSearchFilter filter,
+            @PageableDefault(page = 0, size = 10)
+            Pageable pageable
+    ) {
+        PageResponse<OrderResponse> pageResponse = orderService.getOrders(filter, pageable);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Mapper.toApiResponse("Page Response", pageResponse));
     }
 }

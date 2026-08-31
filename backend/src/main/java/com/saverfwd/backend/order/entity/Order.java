@@ -2,8 +2,6 @@ package com.saverfwd.backend.order.entity;
 
 import com.saverfwd.backend.common.entity.BaseEntity;
 import com.saverfwd.backend.food.entity.FoodItem;
-import com.saverfwd.backend.food.enums.ListingType;
-import com.saverfwd.backend.food.enums.Unit;
 import com.saverfwd.backend.order.enums.OrderStatus;
 import com.saverfwd.backend.user.entity.User;
 import jakarta.persistence.*;
