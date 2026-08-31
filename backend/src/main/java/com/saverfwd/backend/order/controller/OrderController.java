@@ -38,4 +38,10 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Page Response", pageResponse));
     }
+
+    @GetMapping("/{orderId}")
+    public ResponseEntity<ApiResponse<OrderResponse>> getOrderById(@PathVariable Long orderId) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(orderService.getOrderByOrderId(orderId));
+    }
 }

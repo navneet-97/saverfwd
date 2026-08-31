@@ -60,7 +60,7 @@ public class OrderService {
                     OrderResponse res = orderMapper.toOrderResponse(savedOrder);
                     return Mapper.toApiResponse("Order created successfully!", res);
                 }
-        ).orElseThrow(() -> new ResourceNotFoundException(String.format("FoodItem with %s does not exist", request.foodItem().getId())));
+        ).orElseThrow(() -> new ResourceNotFoundException(String.format("FoodItem with id: %s does not exist", request.foodItem().getId())));
     }
 
     @Transactional(readOnly = true)
@@ -72,6 +72,16 @@ public class OrderService {
                 .map(orderMapper::toOrderResponse);
 
         return Mapper.toPageResponse(page);
+    }
+
+    public ApiResponse<OrderResponse> getOrderByOrderId(Long orderId){
+        return orderRepository.findById(orderId)
+                .map(order -> Mapper.toApiResponse(
+                            "Requested Order:",
+                            orderMapper.toOrderResponse(order)
+                    )
+                )
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Order with id: %s does not exists",orderId)));
     }
 
     private BigDecimal getTotalAmount(FoodItem foodItem, BigDecimal unitPrice, OrderFoodRequest request) {
