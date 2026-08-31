@@ -1,5 +1,6 @@
 package com.saverfwd.backend.order.service;
 
+import com.saverfwd.backend.common.exception.BusinessException;
 import com.saverfwd.backend.common.exception.ResourceNotFoundException;
 import com.saverfwd.backend.common.mapper.Mapper;
 import com.saverfwd.backend.common.response.ApiResponse;
@@ -43,7 +44,7 @@ public class OrderService {
         return foodRepository.findById(request.foodItem().getId()).map(
                 foodItem -> {
                     if (request.quantity().compareTo(foodItem.getQuantity())>0){
-                        throw new IllegalArgumentException("Such quantity is not available");
+                        throw new BusinessException("Such quantity is not available");
                     }
                     BigDecimal unitPrice = foodItem.getPrice().divide(request.quantity(), MathContext.DECIMAL32);
                     BigDecimal totalAmount = getTotalAmount(foodItem, unitPrice, request);
