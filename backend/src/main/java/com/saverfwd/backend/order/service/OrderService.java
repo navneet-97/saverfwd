@@ -1,6 +1,8 @@
 package com.saverfwd.backend.order.service;
 
 import com.saverfwd.backend.common.exception.ResourceNotFoundException;
+import com.saverfwd.backend.common.mapper.Mapper;
+import com.saverfwd.backend.common.response.ApiResponse;
 import com.saverfwd.backend.common.util.Common;
 import com.saverfwd.backend.food.entity.FoodItem;
 import com.saverfwd.backend.food.enums.ListingType;
@@ -10,6 +12,7 @@ import com.saverfwd.backend.order.entity.Order;
 import com.saverfwd.backend.order.enums.OrderStatus;
 import com.saverfwd.backend.order.mapper.OrderMapper;
 import com.saverfwd.backend.order.repository.OrderRepository;
+import com.saverfwd.backend.order.response.OrderResponse;
 import com.saverfwd.backend.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,10 +30,10 @@ public class OrderService {
     private final OrderMapper orderMapper;
     
     @Transactional
-    public void orderFood(OrderFoodRequest request) {
+    public ApiResponse<OrderResponse> orderFood(OrderFoodRequest request) {
         User currentUser = Common.getCurrentUser();
-        
-        FoodItem savedFoodItem = foodRepository.findById(request.foodItem().getId()).map(
+
+        return foodRepository.findById(request.foodItem().getId()).map(
                 foodItem -> {
                     if (request.quantity().compareTo(foodItem.getQuantity())>0){
                         throw new IllegalArgumentException("Such quantity is not available");
@@ -47,7 +50,8 @@ public class OrderService {
 
                     foodItem.setQuantity(foodItem.getQuantity().subtract(request.quantity()));
                     foodRepository.save(foodItem);
-                    return foodItem;
+                    OrderResponse res = orderMapper.toOrderResponse(savedOrder);
+                    return Mapper.toApiResponse("Order created successfully!", res);
                 }
         ).orElseThrow(() -> new ResourceNotFoundException(String.format("FoodItem with %s does not exist", request.foodItem().getId())));
     }
