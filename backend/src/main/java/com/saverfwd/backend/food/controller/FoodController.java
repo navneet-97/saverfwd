@@ -11,7 +11,6 @@ import com.saverfwd.backend.food.service.FoodService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +21,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/food")
 @RequiredArgsConstructor
-@CrossOrigin
 public class FoodController {
 
     private final FoodService foodService;
@@ -75,4 +73,3 @@ public class FoodController {
         return ResponseEntity.ok(Mapper.toApiResponse("My listings",foodService.getMyListings(pageable)));
     }
 }
-
