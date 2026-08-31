@@ -5,6 +5,5 @@ public enum OrderStatus {
     CONFIRMED,
     READY_FOR_PICKUP,
     COMPLETED,
-    CANCELLED,
-    EXPIRED
+    CANCELLED
 }

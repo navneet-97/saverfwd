@@ -28,7 +28,7 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponse>> orderFood(@Valid @RequestBody OrderFoodRequest orderFoodRequest) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(orderService.orderFood(orderFoodRequest));
+                .body(Mapper.toApiResponse("Order created successfully!", orderService.orderFood(orderFoodRequest)));
     }
 
     @GetMapping
@@ -45,7 +45,7 @@ public class OrderController {
     @GetMapping("/{orderId}")
     public ResponseEntity<ApiResponse<OrderResponse>> getOrderById(@PathVariable Long orderId) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(orderService.getOrderByOrderId(orderId));
+                .body(Mapper.toApiResponse("Request Order: ", orderService.getOrderByOrderId(orderId)));
     }
 
     /*
@@ -54,6 +54,12 @@ public class OrderController {
     @GetMapping("/{userId}")
     public ResponseEntity<ApiResponse<List<OrderResponse>>> getOrdersByUserId(@PathVariable Long userId, @RequestParam OrderStatus status) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(orderService.getOrdersByUserId(userId, status));
+                .body(Mapper.toApiResponse("Your orders:", orderService.getOrdersByUserId(userId, status)));
+    }
+
+    @PatchMapping("/{orderId}/status")
+    public ResponseEntity<ApiResponse<OrderResponse>> updateOrderStatus(@PathVariable Long orderId, @RequestParam OrderStatus status) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Mapper.toApiResponse("Order Status Updated!", orderService.updateOrderStatus(orderId, status)));
     }
 }

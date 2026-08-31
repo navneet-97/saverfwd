@@ -1,10 +1,10 @@
 package com.saverfwd.backend.order.service;
 
+import com.saverfwd.backend.common.constant.StatusUpdateConstants;
 import com.saverfwd.backend.common.enums.Role;
 import com.saverfwd.backend.common.exception.BusinessException;
 import com.saverfwd.backend.common.exception.ResourceNotFoundException;
 import com.saverfwd.backend.common.mapper.Mapper;
-import com.saverfwd.backend.common.response.ApiResponse;
 import com.saverfwd.backend.common.response.PageResponse;
 import com.saverfwd.backend.common.util.Common;
 import com.saverfwd.backend.food.entity.FoodItem;
@@ -31,6 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +44,7 @@ public class OrderService {
     private final OrderMapper orderMapper;
 
     @Transactional
-    public ApiResponse<OrderResponse> orderFood(OrderFoodRequest request) {
+    public OrderResponse orderFood(OrderFoodRequest request) {
         User currentUser = Common.getCurrentUser();
 
         return foodRepository.findById(request.foodItem().getId()).map(
@@ -62,10 +64,9 @@ public class OrderService {
 
                     foodItem.setQuantity(foodItem.getQuantity().subtract(request.quantity()));
                     foodRepository.save(foodItem);
-                    OrderResponse res = orderMapper.toOrderResponse(savedOrder);
-                    return Mapper.toApiResponse("Order created successfully!", res);
+                    return orderMapper.toOrderResponse(savedOrder);
                 }
-        ).orElseThrow(() -> new ResourceNotFoundException(String.format("FoodItem with id: %s does not exist", request.foodItem().getId())));
+        ).orElseThrow(() -> new ResourceNotFoundException(String.format("FoodItem with id: %s not found", request.foodItem().getId())));
     }
 
     @Transactional(readOnly = true)
@@ -79,17 +80,13 @@ public class OrderService {
         return Mapper.toPageResponse(page);
     }
 
-    public ApiResponse<OrderResponse> getOrderByOrderId(Long orderId){
+    public OrderResponse getOrderByOrderId(Long orderId){
         return orderRepository.findById(orderId)
-                .map(order -> Mapper.toApiResponse(
-                            "Requested Order:",
-                            orderMapper.toOrderResponse(order)
-                    )
-                )
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("Order with id: %s does not exists",orderId)));
+                .map(orderMapper::toOrderResponse)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Order with id: %s not found",orderId)));
     }
 
-    public ApiResponse<List<OrderResponse>> getOrdersByUserId(Long userId, OrderStatus status){
+    public List<OrderResponse> getOrdersByUserId(Long userId, OrderStatus status){
         return userRepository.findById(userId).map(user -> {
             User currentUser = Common.getCurrentUser();
             if (!currentUser.getId().equals(user.getId()) || !currentUser.getRole().equals(Role.ADMIN)){
@@ -98,15 +95,42 @@ public class OrderService {
 
             List<Order> savedOrders = orderRepository.findOrdersByUserIdAndStatusStatus(userId, status);
             if (savedOrders == null || savedOrders.isEmpty()){
-                throw new ResourceNotFoundException(String.format("Order with userId: %s does not exists", userId));
+                throw new ResourceNotFoundException(String.format("Order with userId: %s not found", userId));
             }
 
-            List<OrderResponse> res = savedOrders.stream().map(orderMapper::toOrderResponse).toList();
-            return Mapper.toApiResponse(
-                    "Your orders:",
-                    res
-            );
-        }).orElseThrow(() -> new ResourceNotFoundException(String.format("User with id: %s does not exists", userId)));
+            return savedOrders.stream().map(orderMapper::toOrderResponse).toList();
+        }).orElseThrow(() -> new ResourceNotFoundException(String.format("User with id: %s not found", userId)));
+    }
+
+    @Transactional
+    public OrderResponse updateOrderStatus(Long orderId, OrderStatus status) {
+        return orderRepository.findById(orderId).map(order -> {
+            validateStatusTransition(order.getStatus(), status);
+            if (status.equals(OrderStatus.CANCELLED)){
+                assertOwner(order);
+            }
+
+            order.setStatus(status);
+            return orderMapper.toOrderResponse(order);
+        }).orElseThrow(()->new ResourceNotFoundException(String.format("Order with id: %s not found", orderId)));
+    }
+
+    private void validateStatusTransition(OrderStatus current, OrderStatus target){
+        if (StatusUpdateConstants.TERMINAL_ORDER_STATUSES.contains(current)) {
+            throw new BusinessException(String.format("%s Order status cannot be modified", current));
+        }
+
+        Set<OrderStatus> allowed = StatusUpdateConstants.ALLOWED_ORDER_TRANSITIONS.getOrDefault(current, Set.of());
+        if (!allowed.contains(target)) {
+            throw new BusinessException(String.format("Cannot change order status from %s to %s", current, target));
+        }
+    }
+
+    private void assertOwner(Order order){
+        User currentUser = Common.getCurrentUser();
+        if (!Objects.equals(currentUser.getId(), order.getCustomer().getId())) {
+            throw new BusinessException("You are not authorized to modify this order");
+        }
     }
 
     private BigDecimal getTotalAmount(FoodItem foodItem, BigDecimal unitPrice, OrderFoodRequest request) {
