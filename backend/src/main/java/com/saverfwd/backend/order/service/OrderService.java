@@ -1,5 +1,6 @@
 package com.saverfwd.backend.order.service;
 
+import com.saverfwd.backend.common.enums.Role;
 import com.saverfwd.backend.common.exception.BusinessException;
 import com.saverfwd.backend.common.exception.ResourceNotFoundException;
 import com.saverfwd.backend.common.mapper.Mapper;
@@ -18,6 +19,7 @@ import com.saverfwd.backend.order.repository.OrderRepository;
 import com.saverfwd.backend.order.response.OrderResponse;
 import com.saverfwd.backend.order.specification.OrderSpecification;
 import com.saverfwd.backend.user.entity.User;
+import com.saverfwd.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -35,8 +38,9 @@ public class OrderService {
     
     private final OrderRepository orderRepository;
     private final FoodRepository foodRepository;
+    private final UserRepository userRepository;
     private final OrderMapper orderMapper;
-    
+
     @Transactional
     public ApiResponse<OrderResponse> orderFood(OrderFoodRequest request) {
         User currentUser = Common.getCurrentUser();
@@ -83,6 +87,26 @@ public class OrderService {
                     )
                 )
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Order with id: %s does not exists",orderId)));
+    }
+
+    public ApiResponse<List<OrderResponse>> getOrdersByUserId(Long userId, OrderStatus status){
+        return userRepository.findById(userId).map(user -> {
+            User currentUser = Common.getCurrentUser();
+            if (!currentUser.getId().equals(user.getId()) || !currentUser.getRole().equals(Role.ADMIN)){
+                throw new BusinessException("You have no permission to fetch this resource");
+            }
+
+            List<Order> savedOrders = orderRepository.findOrdersByUserIdAndStatusStatus(userId, status);
+            if (savedOrders == null || savedOrders.isEmpty()){
+                throw new ResourceNotFoundException(String.format("Order with userId: %s does not exists", userId));
+            }
+
+            List<OrderResponse> res = savedOrders.stream().map(orderMapper::toOrderResponse).toList();
+            return Mapper.toApiResponse(
+                    "Your orders:",
+                    res
+            );
+        }).orElseThrow(() -> new ResourceNotFoundException(String.format("User with id: %s does not exists", userId)));
     }
 
     private BigDecimal getTotalAmount(FoodItem foodItem, BigDecimal unitPrice, OrderFoodRequest request) {

@@ -5,6 +5,7 @@ import com.saverfwd.backend.common.response.ApiResponse;
 import com.saverfwd.backend.common.response.PageResponse;
 import com.saverfwd.backend.order.dto.OrderFoodRequest;
 import com.saverfwd.backend.order.dto.OrderSearchFilter;
+import com.saverfwd.backend.order.enums.OrderStatus;
 import com.saverfwd.backend.order.response.OrderResponse;
 import com.saverfwd.backend.order.service.OrderService;
 import jakarta.validation.Valid;
@@ -14,6 +15,8 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -43,5 +46,14 @@ public class OrderController {
     public ResponseEntity<ApiResponse<OrderResponse>> getOrderById(@PathVariable Long orderId) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(orderService.getOrderByOrderId(orderId));
+    }
+
+    /*
+        Api to fetch self created orders with status
+     */
+    @GetMapping("/{userId}")
+    public ResponseEntity<ApiResponse<List<OrderResponse>>> getOrdersByUserId(@PathVariable Long userId, @RequestParam OrderStatus status) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(orderService.getOrdersByUserId(userId, status));
     }
 }
