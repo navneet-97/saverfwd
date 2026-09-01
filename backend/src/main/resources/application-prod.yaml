@@ -16,9 +16,9 @@ spring:
       hibernate:
         format_sql: false
 
-  redis:
-    host: ${REDIS_HOST}
-    port: ${REDIS_PORT:6379}
+  data:
+    redis:
+      url: ${REDIS_URL}
 
 server:
   address: 0.0.0.0
