@@ -236,6 +236,36 @@
   padding: var(--space-4) 0;
 }
 
+/* Claim section */
+.food-detail__claim-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.food-detail__claim-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+  color: var(--color-primary);
+  animation: scale-in 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.food-detail__claim-success-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+}
+
+.food-detail__claim-success-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
+}
+
 /* Mobile: full-width sidebar */
 @media (max-width: 767px) {
   .food-detail__sidebar {

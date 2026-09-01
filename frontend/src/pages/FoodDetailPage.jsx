@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { MapPin, Clock, Calendar, User, Navigation, MessageSquare, ArrowLeft, Leaf } from 'lucide-react';
+import { MapPin, Clock, Calendar, User, Navigation, MessageSquare, ArrowLeft, Leaf, Loader2, CheckCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import foodApi from '../api/foodApi';
+import orderApi from '../api/orderApi';
 import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
+import Input from '../components/common/Input';
 import { SkeletonText } from '../components/common/SkeletonLoader';
 import { CURRENCY_SYMBOL, STATUS_COLORS, getFoodTypeLabel, getUnitLabel, getFoodTypeIcon } from '../utils/constants';
 import { formatDate, formatTime, getTimeUntil, formatDateTime } from '../utils/formatters';
@@ -19,6 +21,9 @@ export default function FoodDetailPage() {
 
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [claimLoading, setClaimLoading] = useState(false);
+  const [claimSuccess, setClaimSuccess] = useState(false);
+  const [claimQty, setClaimQty] = useState('');
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -61,6 +66,29 @@ export default function FoodDetailPage() {
   const isOwner = user?.id === listing.ownerId;
   const statusStyle = STATUS_COLORS[listing.status] || STATUS_COLORS.AVAILABLE;
   const canClaim = listing.status === 'AVAILABLE' && !isOwner;
+
+  const handleClaim = async () => {
+    const qty = Number(claimQty);
+    if (!qty || qty <= 0) {
+      toast.error('Please enter a valid quantity.');
+      return;
+    }
+    if (qty > Number(listing.quantity)) {
+      toast.error(`Only ${listing.quantity} ${getUnitLabel(listing.unit)} available.`);
+      return;
+    }
+
+    setClaimLoading(true);
+    try {
+      await orderApi.createOrder(listing.id, qty);
+      setClaimSuccess(true);
+      toast.success('Order placed successfully!');
+    } catch (err) {
+      toast.error(err.message || 'Failed to place order.');
+    } finally {
+      setClaimLoading(false);
+    }
+  };
 
   return (
     <div className="food-detail">
@@ -163,21 +191,46 @@ export default function FoodDetailPage() {
         {/* Sidebar Actions */}
         <div className="food-detail__sidebar">
           <div className="food-detail__actions-card">
-            {canClaim && (
+            {canClaim && !claimSuccess && (
               <>
-                {isDonation ? (
-                  <Button fullWidth size="lg" disabled>
-                    Claim Food (Coming Soon)
+                <div className="food-detail__claim-section">
+                  <Input
+                    label={`Quantity (${getUnitLabel(listing.unit)})`}
+                    name="claimQty"
+                    type="number"
+                    placeholder={`Max: ${listing.quantity}`}
+                    min="0.01"
+                    max={listing.quantity}
+                    step="any"
+                    value={claimQty}
+                    onChange={(e) => setClaimQty(e.target.value)}
+                  />
+                  <Button
+                    fullWidth
+                    size="lg"
+                    loading={claimLoading}
+                    onClick={handleClaim}
+                  >
+                    {isDonation ? 'Claim Food' : `Pay ${CURRENCY_SYMBOL}${listing.price}`}
                   </Button>
-                ) : (
-                  <Button fullWidth size="lg" disabled>
-                    Purchase Food (Coming Soon)
-                  </Button>
-                )}
+                </div>
                 <Button fullWidth variant="secondary" as={Link} to="/messages">
                   <MessageSquare size={18} /> Message User
                 </Button>
               </>
+            )}
+
+            {canClaim && claimSuccess && (
+              <div className="food-detail__claim-success">
+                <CheckCircle size={32} />
+                <p className="food-detail__claim-success-title">Order Placed!</p>
+                <p className="food-detail__claim-success-text">
+                  Your order has been placed successfully. Check your orders for details.
+                </p>
+                <Button fullWidth variant="secondary" as={Link} to="/orders">
+                  View Orders
+                </Button>
+              </div>
             )}
 
             {isOwner && (
@@ -186,7 +239,7 @@ export default function FoodDetailPage() {
               </Button>
             )}
 
-            {!canClaim && !isOwner && (
+            {!canClaim && !isOwner && !claimSuccess && (
               <p className="food-detail__unavailable">
                 This food is no longer available.
               </p>
