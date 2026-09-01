@@ -1,5 +1,6 @@
 package com.saverfwd.backend.user.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.saverfwd.backend.auth.entity.RefreshToken;
 import com.saverfwd.backend.common.entity.BaseEntity;
 import com.saverfwd.backend.common.enums.AccountStatus;
@@ -31,6 +32,7 @@ public class User extends BaseEntity {
     private String email;
 
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
     @Column(nullable = false)
@@ -49,5 +51,6 @@ public class User extends BaseEntity {
             cascade = CascadeType.ALL,
             fetch = FetchType.LAZY
     )
+    @JsonIgnore
     private List<RefreshToken> refreshTokens;
 }

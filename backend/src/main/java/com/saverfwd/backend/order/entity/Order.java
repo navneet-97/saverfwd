@@ -22,7 +22,8 @@ public class Order extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private FoodItem foodItem;
 
-    @Column(nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = false)
     private User customer;
 
     @Column(nullable = false, precision = 12, scale = 2)
@@ -38,9 +39,6 @@ public class Order extends BaseEntity {
     @Column(nullable = false)
     private OrderStatus status;
 
-    @Column(nullable = false)
     private LocalDateTime cancelledAt;
-
-    @Column(nullable = false)
     private LocalDateTime completedAt;
 }

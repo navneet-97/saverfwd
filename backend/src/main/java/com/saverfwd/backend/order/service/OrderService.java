@@ -7,7 +7,6 @@ import com.saverfwd.backend.common.exception.ResourceNotFoundException;
 import com.saverfwd.backend.common.mapper.Mapper;
 import com.saverfwd.backend.common.response.PageResponse;
 import com.saverfwd.backend.common.util.Common;
-import com.saverfwd.backend.food.entity.FoodItem;
 import com.saverfwd.backend.food.enums.ListingType;
 import com.saverfwd.backend.food.repository.FoodRepository;
 import com.saverfwd.backend.order.dto.OrderFoodRequest;
@@ -29,7 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -47,15 +46,23 @@ public class OrderService {
     public OrderResponse orderFood(OrderFoodRequest request) {
         User currentUser = Common.getCurrentUser();
 
-        return foodRepository.findById(request.foodItem().getId()).map(
+        return foodRepository.findById(request.foodItemId()).map(
                 foodItem -> {
                     if (request.quantity().compareTo(foodItem.getQuantity())>0){
                         throw new BusinessException("Such quantity is not available");
                     }
-                    BigDecimal unitPrice = foodItem.getPrice().divide(request.quantity(), MathContext.DECIMAL32);
-                    BigDecimal totalAmount = getTotalAmount(foodItem, unitPrice, request);
+                    BigDecimal unitPrice;
+                    BigDecimal totalAmount;
+                    if(foodItem.getListingType().equals(ListingType.DONATION)){
+                        unitPrice=BigDecimal.ZERO;
+                        totalAmount=BigDecimal.ZERO;
+                    }else{
+                        unitPrice=foodItem.getPrice().divide(foodItem.getQuantity(), 2, RoundingMode.HALF_UP);
+                        totalAmount=unitPrice.multiply(request.quantity()).setScale(2, RoundingMode.HALF_UP);
+                    }
 
                     Order newOrder = orderMapper.toOrder(request);
+                    newOrder.setFoodItem(foodItem);
                     newOrder.setCustomer(currentUser);
                     newOrder.setStatus(OrderStatus.PENDING);
                     newOrder.setTotalAmount(totalAmount);
@@ -63,10 +70,9 @@ public class OrderService {
                     Order savedOrder = orderRepository.save(newOrder);
 
                     foodItem.setQuantity(foodItem.getQuantity().subtract(request.quantity()));
-                    foodRepository.save(foodItem);
                     return orderMapper.toOrderResponse(savedOrder);
                 }
-        ).orElseThrow(() -> new ResourceNotFoundException(String.format("FoodItem with id: %s not found", request.foodItem().getId())));
+        ).orElseThrow(() -> new ResourceNotFoundException(String.format("FoodItem with id: %s not found", request.foodItemId())));
     }
 
     @Transactional(readOnly = true)
@@ -93,7 +99,7 @@ public class OrderService {
                 throw new BusinessException("You have no permission to fetch this resource");
             }
 
-            List<Order> savedOrders = orderRepository.findOrdersByUserIdAndStatusStatus(userId, status);
+            List<Order> savedOrders = orderRepository.findByCustomerIdAndStatus(userId, status);
             if (savedOrders == null || savedOrders.isEmpty()){
                 throw new ResourceNotFoundException(String.format("Order with userId: %s not found", userId));
             }
@@ -130,14 +136,6 @@ public class OrderService {
         User currentUser = Common.getCurrentUser();
         if (!Objects.equals(currentUser.getId(), order.getCustomer().getId())) {
             throw new BusinessException("You are not authorized to modify this order");
-        }
-    }
-
-    private BigDecimal getTotalAmount(FoodItem foodItem, BigDecimal unitPrice, OrderFoodRequest request) {
-        if (foodItem.getListingType() == ListingType.SALE) {
-            return request.quantity().multiply(unitPrice);
-        } else {
-            return BigDecimal.ZERO;
         }
     }
 }
