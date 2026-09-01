@@ -3,8 +3,10 @@ package com.saverfwd.backend.order.controller;
 import com.saverfwd.backend.common.mapper.Mapper;
 import com.saverfwd.backend.common.response.ApiResponse;
 import com.saverfwd.backend.common.response.PageResponse;
+import com.saverfwd.backend.food.dto.UpdateFoodStatusRequest;
 import com.saverfwd.backend.order.dto.OrderFoodRequest;
 import com.saverfwd.backend.order.dto.OrderSearchFilter;
+import com.saverfwd.backend.order.dto.UpdateOrderStatusRequest;
 import com.saverfwd.backend.order.enums.OrderStatus;
 import com.saverfwd.backend.order.response.OrderResponse;
 import com.saverfwd.backend.order.service.OrderService;
@@ -48,18 +50,9 @@ public class OrderController {
                 .body(Mapper.toApiResponse("Request Order: ", orderService.getOrderByOrderId(orderId)));
     }
 
-    /*
-        Api to fetch self created orders with status
-     */
-    @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponse<List<OrderResponse>>> getOrdersByUserId(@PathVariable Long userId, @RequestParam OrderStatus status) {
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(Mapper.toApiResponse("Your orders:", orderService.getOrdersByUserId(userId, status)));
-    }
-
     @PatchMapping("/{orderId}/status")
-    public ResponseEntity<ApiResponse<OrderResponse>> updateOrderStatus(@PathVariable Long orderId, @RequestParam OrderStatus status) {
+    public ResponseEntity<ApiResponse<OrderResponse>> updateOrderStatus(@PathVariable Long orderId, @Valid @RequestBody UpdateOrderStatusRequest request) {
         return ResponseEntity.status(HttpStatus.OK)
-                .body(Mapper.toApiResponse("Order Status Updated!", orderService.updateOrderStatus(orderId, status)));
+                .body(Mapper.toApiResponse("Order Status Updated!", orderService.updateOrderStatus(orderId, request.status())));
     }
 }

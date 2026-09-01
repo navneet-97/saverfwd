@@ -1,7 +1,6 @@
 package com.saverfwd.backend.order.service;
 
 import com.saverfwd.backend.common.constant.StatusUpdateConstants;
-import com.saverfwd.backend.common.enums.Role;
 import com.saverfwd.backend.common.exception.BusinessException;
 import com.saverfwd.backend.common.exception.ResourceNotFoundException;
 import com.saverfwd.backend.common.mapper.Mapper;
@@ -29,7 +28,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -39,7 +37,6 @@ public class OrderService {
     
     private final OrderRepository orderRepository;
     private final FoodRepository foodRepository;
-    private final UserRepository userRepository;
     private final OrderMapper orderMapper;
 
     @Transactional
@@ -92,22 +89,6 @@ public class OrderService {
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Order with id: %s not found",orderId)));
     }
 
-    public List<OrderResponse> getOrdersByUserId(Long userId, OrderStatus status){
-        return userRepository.findById(userId).map(user -> {
-            User currentUser = Common.getCurrentUser();
-            if (!currentUser.getId().equals(user.getId()) || !currentUser.getRole().equals(Role.ADMIN)){
-                throw new BusinessException("You have no permission to fetch this resource");
-            }
-
-            List<Order> savedOrders = orderRepository.findByCustomerIdAndStatus(userId, status);
-            if (savedOrders == null || savedOrders.isEmpty()){
-                throw new ResourceNotFoundException(String.format("Order with userId: %s not found", userId));
-            }
-
-            return savedOrders.stream().map(orderMapper::toOrderResponse).toList();
-        }).orElseThrow(() -> new ResourceNotFoundException(String.format("User with id: %s not found", userId)));
-    }
-
     @Transactional
     public OrderResponse updateOrderStatus(Long orderId, OrderStatus status) {
         return orderRepository.findById(orderId).map(order -> {
@@ -123,7 +104,7 @@ public class OrderService {
 
     private void validateStatusTransition(OrderStatus current, OrderStatus target){
         if (StatusUpdateConstants.TERMINAL_ORDER_STATUSES.contains(current)) {
-            throw new BusinessException(String.format("%s Order status cannot be modified", current));
+            throw new BusinessException(String.format("Order status: %s cannot be modified", current));
         }
 
         Set<OrderStatus> allowed = StatusUpdateConstants.ALLOWED_ORDER_TRANSITIONS.getOrDefault(current, Set.of());
