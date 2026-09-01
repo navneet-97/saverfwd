@@ -15,6 +15,7 @@ spring:
     properties:
       hibernate:
         format_sql: false
+    open-in-view: false
 
   data:
     redis:
@@ -26,3 +27,9 @@ server:
 
 jwt:
   secret: ${JWT_SECRET}
+
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
