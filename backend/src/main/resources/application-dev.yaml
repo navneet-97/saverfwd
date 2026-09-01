@@ -3,26 +3,25 @@ spring:
     name: backend
 
   datasource:
-    url: jdbc:mysql://localhost:3306/saverfwd
-    username: root
-    password: Navneet@1math
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL:jdbc:mysql://localhost:3306/saverfwd}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:your-local-password}
+    driver-class-name: ${DB_DRIVER:com.mysql.cj.jdbc.Driver}
 
   jpa:
     hibernate:
       ddl-auto: update
-
     show-sql: true
     properties:
       hibernate:
         format_sql: true
 
   redis:
-    host: localhost
-    port: 6379
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
 
 server:
-  port: 8000
+  port: ${PORT:8000}
 
 jwt:
-  secret: s-afalfnafpqpfnqpcnqcqpkcqmcmysecret-key
+  secret: ${JWT_SECRET:your-jwt-secret}

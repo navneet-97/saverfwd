@@ -34,7 +34,6 @@
 			<groupId>org.mapstruct</groupId>
 			<artifactId>mapstruct</artifactId>
 			<version>1.5.5.Final</version>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springdoc</groupId>
@@ -45,7 +44,6 @@
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>
 			<version>0.13.0</version>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
