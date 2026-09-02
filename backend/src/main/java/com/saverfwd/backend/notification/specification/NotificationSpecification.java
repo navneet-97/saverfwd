@@ -19,8 +19,8 @@ public final class NotificationSpecification {
                 predicates.add(cb.equal(root.get("user").get("id"), filter.userId()));
             }
 
-            if (filter.read() != null) {
-                predicates.add(cb.equal(root.get("read"), filter.read()));
+            if (filter.isRead() != null) {
+                predicates.add(cb.equal(root.get("isRead"), filter.isRead()));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

@@ -29,7 +29,7 @@ public class Notification extends BaseEntity {
     private String message;
 
     @Column(nullable = false)
-    private Boolean read;
+    private Boolean isRead;
 
     private Long referenceId;
 }

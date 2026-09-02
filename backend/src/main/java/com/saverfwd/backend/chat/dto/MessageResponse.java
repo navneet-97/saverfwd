@@ -6,7 +6,7 @@ public record MessageResponse(
         Long chatId,
         Long senderId,
         String content,
-        Boolean read,
+        Boolean isRead,
         LocalDateTime createdAt
 ) {
 }

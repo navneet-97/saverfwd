@@ -27,7 +27,7 @@ public class MessageService {
             Message message = messageMapper.toMessage(request);
             message.setChat(chat);
             message.setSender(user);
-            message.setRead(false);
+            message.setIsRead(false);
 
             Message savedMessage = messageRepository.save(message);
             return messageMapper.toMessageResponse(savedMessage);
@@ -53,7 +53,7 @@ public class MessageService {
 
     public MessageResponse readMessage(Long messageId) {
         return messageRepository.findById(messageId).map(message -> {
-            message.setRead(true);
+            message.setIsRead(true);
             return messageMapper.toMessageResponse(message);
         }).orElseThrow(() -> new ResourceNotFoundException(String.format("Message with id: %s not found", messageId)));
     }

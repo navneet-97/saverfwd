@@ -10,7 +10,7 @@ public record NotificationResponse(
         NotificationType notificationType,
         String title,
         String message,
-        Boolean read,
+        Boolean isRead,
         Long referenceId,
         LocalDateTime createdAt
 ) {

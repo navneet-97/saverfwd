@@ -25,5 +25,5 @@ public class Message extends BaseEntity {
     private String content;
 
     @Column(nullable = false)
-    private Boolean read;
+    private Boolean isRead;
 }

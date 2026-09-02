@@ -31,7 +31,7 @@ public class NotificationService {
         return userRepository.findById(request.userId()).map(user -> {
             Notification notification = notificationMapper.toNotification(request);
             notification.setUser(user);
-            notification.setRead(false);
+            notification.setIsRead(false);
 
             Notification savedNotification = notificationRepository.save(notification);
             return notificationMapper.toNotificationResponse(savedNotification);
@@ -57,7 +57,7 @@ public class NotificationService {
     @Transactional
     public NotificationResponse readNotificationById(Long notificationId){
         return notificationRepository.findById(notificationId).map(notification -> {
-            notification.setRead(true);
+            notification.setIsRead(true);
             return notificationMapper.toNotificationResponse(notification);
         }).orElseThrow(() -> new ResourceNotFoundException(String.format("Notification with id: %s not found", notificationId)));
     }
