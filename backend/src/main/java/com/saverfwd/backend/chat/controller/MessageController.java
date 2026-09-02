@@ -9,10 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/message")
@@ -25,5 +22,11 @@ public class MessageController {
     public ResponseEntity<ApiResponse<MessageResponse>> sendMessage(@Valid @RequestBody CreateMessageRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Mapper.toApiResponse("Message created!", messageService.postMessage(request)));
+    }
+
+    @GetMapping("/{messageId}")
+    public ResponseEntity<ApiResponse<MessageResponse>> getMessage(@PathVariable("messageId") Long messageId) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Mapper.toApiResponse("Message found!", messageService.getMessageById(messageId)));
     }
 }

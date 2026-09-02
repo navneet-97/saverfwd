@@ -31,4 +31,10 @@ public class MessageService {
             return messageMapper.toMessageResponse(savedMessage);
         }).orElseThrow(() -> new ResourceNotFoundException(String.format("Chat with id: %s not found", request.chatId())));
     }
+
+    public MessageResponse getMessageById(Long messageId) {
+        return messageRepository.findById(messageId)
+                .map(messageMapper::toMessageResponse)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Message with id: %s not found", messageId)));
+    }
 }
