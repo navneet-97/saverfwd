@@ -54,4 +54,10 @@ public class RatingService {
 
         return Mapper.toPageResponse(page);
     }
+
+    public RatingResponse getRatingById(Long id) {
+        return ratingRepository.findById(id)
+                .map(ratingMapper::toRatingResponse)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Rating with id: %s not found", id)));
+    }
 }

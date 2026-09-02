@@ -37,4 +37,10 @@ public class RatingController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Rating Found!", pageResponse));
     }
+
+    @GetMapping("/{ratingId}")
+    public ResponseEntity<ApiResponse<RatingResponse>> getRatingById(@PathVariable("ratingId") Long ratingId) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Mapper.toApiResponse("Rating Found!", ratingService.getRatingById(ratingId)));
+    }
 }
