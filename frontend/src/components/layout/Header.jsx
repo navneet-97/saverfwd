@@ -8,11 +8,13 @@ import {
   User,
   Plus,
   Bell,
+  Star,
   LogOut,
   Menu,
   X,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useAuthModal } from '../../context/AuthModalContext';
 import './Header.css';
 
 const NAV_LINKS = [
@@ -32,6 +34,7 @@ const BOTTOM_NAV = [
 
 export default function Header() {
   const { user, logout } = useAuth();
+  const { openAuthModal } = useAuthModal();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -54,7 +57,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login');
+    navigate('/');
   };
 
   const isActive = (path) => location.pathname === path;
@@ -69,8 +72,8 @@ export default function Header() {
             SaverFwd
           </Link>
           <div className="header__public-links">
-            <Link to="/login" className="btn btn--ghost btn--sm">Log In</Link>
-            <Link to="/register" className="btn btn--primary btn--sm">Get Started</Link>
+            <button className="btn btn--ghost btn--sm" onClick={() => openAuthModal('login')}>Log In</button>
+            <button className="btn btn--primary btn--sm" onClick={() => openAuthModal('register')}>Get Started</button>
           </div>
         </div>
       </header>
@@ -137,6 +140,10 @@ export default function Header() {
                     <Bell size={16} />
                     Notifications
                   </Link>
+                  <Link to="/ratings" className="header__dropdown-item" onClick={() => setDropdownOpen(false)}>
+                    <Star size={16} />
+                    My Ratings
+                  </Link>
                   <button className="header__dropdown-item header__dropdown-item--danger" onClick={handleLogout}>
                     <LogOut size={16} />
                     Logout
@@ -197,6 +204,10 @@ export default function Header() {
               <Link to="/notifications" className="header__mobile-link">
                 <Bell size={20} />
                 Notifications
+              </Link>
+              <Link to="/ratings" className="header__mobile-link">
+                <Star size={20} />
+                My Ratings
               </Link>
               <button className="header__mobile-link header__mobile-link--danger" onClick={handleLogout}>
                 <LogOut size={20} />

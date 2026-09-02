@@ -2,10 +2,11 @@
   position: sticky;
   top: 0;
   z-index: var(--z-nav);
-  background: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
 .header__inner {
@@ -29,12 +30,13 @@
   text-decoration: none;
   flex-shrink: 0;
   letter-spacing: -0.025em;
-  transition: opacity 150ms ease;
+  transition: all 200ms ease;
 }
 
 .header__logo:hover {
   text-decoration: none;
   opacity: 0.85;
+  transform: scale(1.02);
 }
 
 .header__logo-icon {
@@ -103,8 +105,8 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
-  background: linear-gradient(135deg, #16a34a, #15803d);
-  color: var(--color-text-inverse);
+  background: #16a34a;
+  color: white;
   border-radius: var(--radius-lg);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
@@ -113,16 +115,23 @@
   box-shadow: 0 1px 3px rgba(22, 163, 74, 0.25);
   letter-spacing: -0.01em;
   min-height: 38px;
+  border: 1px solid transparent;
 }
 
 .header__list-btn:hover {
-  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.35);
+  background: white;
+  color: #16a34a;
+  border-color: #16a34a;
+  box-shadow: 0 6px 20px rgba(22, 163, 74, 0.15), 0 2px 6px rgba(22, 163, 74, 0.08);
   transform: translateY(-1px);
   text-decoration: none;
 }
 
 .header__list-btn:active {
   transform: translateY(0) scale(0.98);
+  background: #f0fdf4;
+  color: #15803d;
+  border-color: #15803d;
 }
 
 @media (min-width: 768px) {
@@ -206,10 +215,10 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-xl), 0 0 0 1px rgba(0, 0, 0, 0.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 4px 12px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02);
   z-index: var(--z-dropdown);
   overflow: hidden;
-  animation: scale-in 150ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: scale-in 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .header__dropdown-user {
@@ -324,9 +333,9 @@
   max-height: calc(100vh - var(--header-height));
   background: var(--color-surface);
   border-radius: 0 0 0 var(--radius-2xl);
-  box-shadow: var(--shadow-2xl);
+  box-shadow: -10px 10px 30px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
-  animation: slide-in-down 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: slide-in-down 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .header__mobile-user {

@@ -17,6 +17,7 @@
 /* Add padding on mobile for bottom navigation */
 @media (max-width: 767px) {
   .app-layout__main {
-    padding-bottom: calc(var(--space-8) + 80px);
+    padding: var(--space-4) 0;
+    padding-bottom: calc(var(--space-8) + 80px + env(safe-area-inset-bottom, 0px));
   }
 }
