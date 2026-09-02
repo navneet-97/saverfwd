@@ -22,31 +22,27 @@ export default function BrowseFoodPage() {
     listingType: '',
     minPrice: '',
     maxPrice: '',
-    status: 'AVAILABLE',
   });
 
   const fetchListings = useCallback(async () => {
     setLoading(true);
     try {
-      // Build FoodFilterRequest — these become filter.* query params
       const filter = {};
       if (searchQuery) filter.title = searchQuery;
       if (filters.foodType) filter.foodType = filters.foodType;
       if (filters.listingType) filter.listingType = filters.listingType;
       if (filters.minPrice) filter.minPrice = Number(filters.minPrice);
       if (filters.maxPrice) filter.maxPrice = Number(filters.maxPrice);
-      if (filters.status) filter.status = filters.status;
+      filter.status = 'AVAILABLE';
       filter.sort = 'createdAt';
       filter.asc = false;
 
-      // Build Pageable — these become pageable.* query params
       const pageable = {
         page,
         size: 12,
       };
 
       const result = await foodApi.getListings(filter, pageable);
-      // result is PageResponseFoodResponse: { content, page, size, totalElements, totalPages, first, last }
       const content = result?.content || [];
       setListings(content);
       setTotalPages(result?.totalPages || 1);
@@ -73,24 +69,27 @@ export default function BrowseFoodPage() {
   };
 
   const clearFilters = () => {
-    setFilters({ foodType: '', listingType: '', minPrice: '', maxPrice: '', status: 'AVAILABLE' });
+    setFilters({ foodType: '', listingType: '', minPrice: '', maxPrice: '' });
     setSearchQuery('');
     setPage(0);
   };
 
-  const hasActiveFilters = filters.listingType || filters.foodType || filters.minPrice || filters.maxPrice || filters.status !== 'AVAILABLE';
+  const hasActiveFilters = filters.listingType || filters.foodType || filters.minPrice || filters.maxPrice;
 
   return (
     <div className="browse">
-      <div className="browse__header">
-        <h1>Browse Food</h1>
-        <p>Find available food from the community</p>
+      {/* Header */}
+      <div className="browse__hero">
+        <div className="browse__hero-content">
+          <h1 className="browse__title">Browse Food</h1>
+          <p className="browse__subtitle">Discover available food from your community</p>
+        </div>
       </div>
 
-      {/* Search & Filter bar */}
-      <div className="browse__toolbar">
+      {/* Search Bar */}
+      <div className="browse__search-bar">
         <form onSubmit={handleSearch} className="browse__search">
-          <Search size={18} className="browse__search-icon" />
+          <Search size={20} className="browse__search-icon" />
           <input
             type="text"
             placeholder="Search food by title..."
@@ -98,115 +97,116 @@ export default function BrowseFoodPage() {
             onChange={(e) => setSearchQuery(e.target.value)}
             className="browse__search-input"
           />
+          {searchQuery && (
+            <button
+              type="button"
+              className="browse__search-clear"
+              onClick={() => { setSearchQuery(''); setPage(0); }}
+            >
+              <X size={16} />
+            </button>
+          )}
         </form>
         <button
-          className={`browse__filter-toggle ${showFilters ? 'browse__filter-toggle--active' : ''}`}
+          className={`browse__filter-btn ${showFilters ? 'browse__filter-btn--active' : ''}`}
           onClick={() => setShowFilters(!showFilters)}
         >
           <SlidersHorizontal size={18} />
-          <span className="browse__filter-toggle-text">Filters</span>
-          {hasActiveFilters && <span className="browse__filter-badge" />}
+          <span>Filters</span>
+          {hasActiveFilters && <span className="browse__filter-dot" />}
         </button>
       </div>
 
-      {/* Filters */}
+      {/* Filters Panel */}
       {showFilters && (
         <div className="browse__filters">
-          <div className="browse__filter-section">
-            <h4 className="browse__filter-title">Food Type</h4>
-            <div className="browse__filter-chips">
-              <button
-                className={`browse__chip ${!filters.foodType ? 'browse__chip--active' : ''}`}
-                onClick={() => handleFilterChange('foodType', '')}
-              >
-                All
-              </button>
-              {FOOD_TYPES.map(({ value, label, icon }) => (
+          <div className="browse__filter-row">
+            <div className="browse__filter-group">
+              <label className="browse__filter-label">Food Type</label>
+              <div className="browse__filter-chips">
                 <button
-                  key={value}
-                  className={`browse__chip ${filters.foodType === value ? 'browse__chip--active' : ''}`}
-                  onClick={() => handleFilterChange('foodType', value)}
+                  className={`browse__chip ${!filters.foodType ? 'browse__chip--active' : ''}`}
+                  onClick={() => handleFilterChange('foodType', '')}
                 >
-                  {icon} {label}
+                  All
                 </button>
-              ))}
+                {FOOD_TYPES.map(({ value, label, icon }) => (
+                  <button
+                    key={value}
+                    className={`browse__chip ${filters.foodType === value ? 'browse__chip--active' : ''}`}
+                    onClick={() => handleFilterChange('foodType', value)}
+                  >
+                    <span className="browse__chip-icon">{icon}</span>
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          <div className="browse__filter-section">
-            <h4 className="browse__filter-title">Listing Type</h4>
-            <div className="browse__filter-chips">
-              <button
-                className={`browse__chip ${!filters.listingType ? 'browse__chip--active' : ''}`}
-                onClick={() => handleFilterChange('listingType', '')}
-              >
-                All
-              </button>
-              {LISTING_TYPES.map(({ value, label }) => (
+            <div className="browse__filter-group">
+              <label className="browse__filter-label">Listing Type</label>
+              <div className="browse__filter-chips">
                 <button
-                  key={value}
-                  className={`browse__chip ${filters.listingType === value ? 'browse__chip--active' : ''}`}
-                  onClick={() => handleFilterChange('listingType', value)}
+                  className={`browse__chip ${!filters.listingType ? 'browse__chip--active' : ''}`}
+                  onClick={() => handleFilterChange('listingType', '')}
                 >
-                  {label}
+                  All
                 </button>
-              ))}
+                {LISTING_TYPES.map(({ value, label }) => (
+                  <button
+                    key={value}
+                    className={`browse__chip ${filters.listingType === value ? 'browse__chip--active' : ''}`}
+                    onClick={() => handleFilterChange('listingType', value)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
 
-          <div className="browse__filter-section">
-            <h4 className="browse__filter-title">Price Range (₹)</h4>
-            <div className="browse__price-range">
-              <input
-                type="number"
-                placeholder="Min"
-                value={filters.minPrice}
-                onChange={(e) => handleFilterChange('minPrice', e.target.value)}
-                className="browse__price-input"
-                min="0"
-              />
-              <span>—</span>
-              <input
-                type="number"
-                placeholder="Max"
-                value={filters.maxPrice}
-                onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
-                className="browse__price-input"
-                min="0"
-              />
-            </div>
-          </div>
-
-          <div className="browse__filter-section">
-            <h4 className="browse__filter-title">Status</h4>
-            <div className="browse__filter-chips">
-              {['AVAILABLE', 'RESERVED', 'SOLD', 'CLAIMED', 'EXPIRED', 'CANCELLED'].map((status) => (
-                <button
-                  key={status}
-                  className={`browse__chip ${filters.status === status ? 'browse__chip--active' : ''}`}
-                  onClick={() => handleFilterChange('status', status)}
-                >
-                  {status.charAt(0) + status.slice(1).toLowerCase()}
-                </button>
-              ))}
+            <div className="browse__filter-group">
+              <label className="browse__filter-label">Price Range (₹)</label>
+              <div className="browse__price-range">
+                <input
+                  type="number"
+                  placeholder="Min"
+                  value={filters.minPrice}
+                  onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+                  className="browse__price-input"
+                  min="0"
+                />
+                <span className="browse__price-sep">—</span>
+                <input
+                  type="number"
+                  placeholder="Max"
+                  value={filters.maxPrice}
+                  onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+                  className="browse__price-input"
+                  min="0"
+                />
+              </div>
             </div>
           </div>
 
           {hasActiveFilters && (
-            <button className="browse__clear-filters" onClick={clearFilters}>
-              <X size={16} />
+            <button className="browse__clear-btn" onClick={clearFilters}>
+              <X size={14} />
               Clear all filters
             </button>
           )}
         </div>
       )}
 
-      {/* Results count */}
+      {/* Results Count */}
       {!loading && totalElements > 0 && (
-        <p className="browse__results-count">{totalElements} {totalElements === 1 ? 'listing' : 'listings'} found</p>
+        <div className="browse__results">
+          <span className="browse__results-count">
+            {totalElements} {totalElements === 1 ? 'listing' : 'listings'} found
+          </span>
+        </div>
       )}
 
-      {/* Results */}
+      {/* Results Grid */}
       {loading ? (
         <div className="browse__grid">
           {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -231,7 +231,11 @@ export default function BrowseFoodPage() {
       ) : (
         <EmptyState
           title="No food listings found"
-          description={hasActiveFilters ? 'Try adjusting your filters to find available food.' : 'No food listings available right now.'}
+          description={
+            hasActiveFilters
+              ? 'Try adjusting your filters to find available food.'
+              : 'No food listings available right now.'
+          }
           actionLabel={hasActiveFilters ? 'Clear Filters' : undefined}
           onAction={hasActiveFilters ? clearFilters : undefined}
         />
