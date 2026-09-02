@@ -8,6 +8,7 @@ import com.saverfwd.backend.user.entity.User;
 import com.saverfwd.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +17,7 @@ public class ChatService {
     private final ChatRepository chatRepository;
     private final UserRepository userRepository;
 
+    @Transactional
     public void createChat(Long userId) {
         User userTwo = Common.getCurrentUser();
 
@@ -26,5 +28,10 @@ public class ChatService {
                     .build();
             return chatRepository.save(chat);
         }).orElseThrow(() -> new ResourceNotFoundException(String.format("User with id: %s not found", userId)));
+    }
+
+    public Chat getChatById(Long chatId) {
+        return chatRepository.findById(chatId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Chat with id: %s not found", chatId)));
     }
 }
