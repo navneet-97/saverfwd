@@ -17,7 +17,6 @@ import com.saverfwd.backend.order.repository.OrderRepository;
 import com.saverfwd.backend.order.response.OrderResponse;
 import com.saverfwd.backend.order.specification.OrderSpecification;
 import com.saverfwd.backend.user.entity.User;
-import com.saverfwd.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

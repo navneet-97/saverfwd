@@ -3,11 +3,9 @@ package com.saverfwd.backend.order.controller;
 import com.saverfwd.backend.common.mapper.Mapper;
 import com.saverfwd.backend.common.response.ApiResponse;
 import com.saverfwd.backend.common.response.PageResponse;
-import com.saverfwd.backend.food.dto.UpdateFoodStatusRequest;
 import com.saverfwd.backend.order.dto.OrderFoodRequest;
 import com.saverfwd.backend.order.dto.OrderSearchFilter;
 import com.saverfwd.backend.order.dto.UpdateOrderStatusRequest;
-import com.saverfwd.backend.order.enums.OrderStatus;
 import com.saverfwd.backend.order.response.OrderResponse;
 import com.saverfwd.backend.order.service.OrderService;
 import jakarta.validation.Valid;
@@ -17,8 +15,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/order")

@@ -15,6 +15,4 @@ import java.util.List;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long>, JpaSpecificationExecutor<Order> {
     @NullMarked Page<Order> findAll(Specification<Order> spec, Pageable pageable);
-
-    List<Order> findByCustomerIdAndStatus(Long userId, OrderStatus status);
 }
