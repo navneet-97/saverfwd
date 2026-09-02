@@ -33,6 +33,7 @@
   transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
   letter-spacing: -0.01em;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
+  position: relative;
 }
 
 .tabs__tab:hover {
@@ -45,6 +46,18 @@
   border-bottom-color: var(--color-primary);
   font-weight: var(--font-weight-semibold);
   background: var(--color-primary-lighter);
+}
+
+.tabs__tab--active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 8px rgba(22, 163, 74, 0.3);
 }
 
 .tabs__count {
