@@ -2,17 +2,18 @@ package com.saverfwd.backend.rating.controller;
 
 import com.saverfwd.backend.common.mapper.Mapper;
 import com.saverfwd.backend.common.response.ApiResponse;
+import com.saverfwd.backend.common.response.PageResponse;
 import com.saverfwd.backend.rating.dto.PostRatingRequest;
 import com.saverfwd.backend.rating.dto.RatingResponse;
+import com.saverfwd.backend.rating.dto.RatingSearchFilter;
 import com.saverfwd.backend.rating.service.RatingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,5 +26,15 @@ public class RatingController {
     public ResponseEntity<ApiResponse<RatingResponse>> postRating(@Valid @RequestBody PostRatingRequest postRatingRequest) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Mapper.toApiResponse("Rating Created!", ratingService.postRating(postRatingRequest)));
+    }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<PageResponse<RatingResponse>>> getRatings(
+            @Valid @ModelAttribute RatingSearchFilter filter,
+            @PageableDefault(page = 0, size = 10) Pageable pageable
+    ) {
+        PageResponse<RatingResponse> pageResponse = ratingService.getRatings(filter, pageable);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Mapper.toApiResponse("Rating Found!", pageResponse));
     }
 }

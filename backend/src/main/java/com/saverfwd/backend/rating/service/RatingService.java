@@ -1,15 +1,23 @@
 package com.saverfwd.backend.rating.service;
 
 import com.saverfwd.backend.common.exception.ResourceNotFoundException;
+import com.saverfwd.backend.common.mapper.Mapper;
+import com.saverfwd.backend.common.response.PageResponse;
 import com.saverfwd.backend.common.util.Common;
 import com.saverfwd.backend.order.repository.OrderRepository;
 import com.saverfwd.backend.rating.dto.PostRatingRequest;
 import com.saverfwd.backend.rating.dto.RatingResponse;
+import com.saverfwd.backend.rating.dto.RatingSearchFilter;
 import com.saverfwd.backend.rating.entity.Rating;
 import com.saverfwd.backend.rating.mapper.RatingMapper;
 import com.saverfwd.backend.rating.repository.RatingRepository;
+import com.saverfwd.backend.rating.specification.RatingSpecification;
 import com.saverfwd.backend.user.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,5 +42,16 @@ public class RatingService {
             Rating savedRating = ratingRepository.save(rating);
             return ratingMapper.toRatingResponse(savedRating);
         }).orElseThrow(() -> new ResourceNotFoundException(String.format("Order with id: %s not found", request.orderId())));
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponse<RatingResponse> getRatings(RatingSearchFilter filter, Pageable pageable){
+        Specification<Rating> spec = RatingSpecification.filter(filter);
+
+        Pageable pageableWithoutSort = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        Page<RatingResponse> page = ratingRepository.findAll(spec, pageableWithoutSort)
+                .map(ratingMapper::toRatingResponse);
+
+        return Mapper.toPageResponse(page);
     }
 }
