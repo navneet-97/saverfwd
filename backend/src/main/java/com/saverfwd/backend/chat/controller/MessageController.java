@@ -44,4 +44,11 @@ public class MessageController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Message updated!", messageService.readMessage(messageId)));
     }
+
+    @DeleteMapping("/{messageId}")
+    public ResponseEntity<ApiResponse<Void>> deleteMessage(@PathVariable("messageId") Long messageId) {
+        messageService.deleteMessage(messageId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Mapper.toApiResponse("Message deleted!", null));
+    }
 }

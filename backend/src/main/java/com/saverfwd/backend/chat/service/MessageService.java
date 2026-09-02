@@ -57,4 +57,8 @@ public class MessageService {
             return messageMapper.toMessageResponse(message);
         }).orElseThrow(() -> new ResourceNotFoundException(String.format("Message with id: %s not found", messageId)));
     }
+
+    public void deleteMessage(Long messageId) {
+        messageRepository.deleteById(messageId);
+    }
 }
