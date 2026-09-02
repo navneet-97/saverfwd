@@ -1,0 +1,38 @@
+package com.saverfwd.backend.rating.service;
+
+import com.saverfwd.backend.common.exception.ResourceNotFoundException;
+import com.saverfwd.backend.common.util.Common;
+import com.saverfwd.backend.order.repository.OrderRepository;
+import com.saverfwd.backend.rating.dto.PostRatingRequest;
+import com.saverfwd.backend.rating.dto.RatingResponse;
+import com.saverfwd.backend.rating.entity.Rating;
+import com.saverfwd.backend.rating.mapper.RatingMapper;
+import com.saverfwd.backend.rating.repository.RatingRepository;
+import com.saverfwd.backend.user.entity.User;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+@RequiredArgsConstructor
+public class RatingService {
+
+    private final RatingRepository ratingRepository;
+    private final OrderRepository orderRepository;
+    private final RatingMapper ratingMapper;
+
+    @Transactional
+    public RatingResponse postRating(PostRatingRequest request){
+        User user = Common.getCurrentUser();
+
+        return orderRepository.findById(request.orderId()).map(order -> {
+            Rating rating = ratingMapper.toRating(request);
+            rating.setOrder(order);
+            rating.setReviewer(user);
+            rating.setReviewedUser(order.getFoodItem().getOwner());
+
+            Rating savedRating = ratingRepository.save(rating);
+            return ratingMapper.toRatingResponse(savedRating);
+        }).orElseThrow(() -> new ResourceNotFoundException(String.format("Order with id: %s not found", request.orderId())));
+    }
+}
