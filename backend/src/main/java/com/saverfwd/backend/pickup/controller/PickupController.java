@@ -30,4 +30,17 @@ public class PickupController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Pickup updated!", pickupService.updatePickup(pickupId, request)));
     }
+
+    @GetMapping("/{pickupId}")
+    public ResponseEntity<ApiResponse<PickupResponse>> getPickup(@PathVariable("pickupId") Long pickupId) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Mapper.toApiResponse("Pickup found!", pickupService.getPickupById(pickupId)));
+    }
+
+    @DeleteMapping("/{pickupId}")
+    public ResponseEntity<ApiResponse<Void>> deletePickup(@PathVariable("pickupId") Long pickupId) {
+        pickupService.deletePickup(pickupId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Mapper.toApiResponse("Pickup deleted!", null));
+    }
 }

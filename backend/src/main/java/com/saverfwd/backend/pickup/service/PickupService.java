@@ -56,6 +56,16 @@ public class PickupService {
         }).orElseThrow(() -> new ResourceNotFoundException(String.format("Pickup with id: %s not found", pickupId)));
     }
 
+    public PickupResponse getPickupById(Long pickupId) {
+        return pickupRepository.findById(pickupId)
+                .map(pickupMapper::toPickupResponse)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Pickup with id: %d not found", pickupId)));
+    }
+
+    public void deletePickup(Long pickupId) {
+        pickupRepository.deleteById(pickupId);
+    }
+
     private void validateTransitions(PickupStatus current, PickupStatus target) {
         if (StatusUpdateConstants.TERMINAL_PICKUP_STATUSES.contains(current)) {
             throw new BusinessException(String.format("%s Pickup status cannot be changed!", current));
