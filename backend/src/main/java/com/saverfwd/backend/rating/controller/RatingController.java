@@ -50,4 +50,11 @@ public class RatingController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Rating Updated!", ratingService.updateRating(ratingId, request)));
     }
+
+    @DeleteMapping("/{ratingId}")
+    public ResponseEntity<ApiResponse<Void>> deleteRating(@PathVariable("ratingId") Long ratingId) {
+        ratingService.deleteRating(ratingId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Mapper.toApiResponse("Rating Deleted", null));
+    }
 }

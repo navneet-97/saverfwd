@@ -74,4 +74,8 @@ public class RatingService {
             return ratingMapper.toRatingResponse(rating);
         }).orElseThrow(() -> new ResourceNotFoundException(String.format("Rating with id: %s not found", id)));
     }
+
+    public void deleteRating(Long id) {
+        ratingRepository.deleteById(id);
+    }
 }
