@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, Apple, HandHeart, Users, Leaf, TrendingDown, Heart } from 'lucide-react';
+import { useAuthModal } from '../context/AuthModalContext';
 import './LandingPage.css';
 
 export default function LandingPage() {
+  const { openAuthModal } = useAuthModal();
   return (
     <div className="landing">
       {/* Hero */}
@@ -25,9 +27,9 @@ export default function LandingPage() {
               Browse Food
               <ArrowRight size={20} />
             </Link>
-            <Link to="/register" className="btn btn--outline-light btn--lg">
+            <button className="btn btn--outline-light btn--lg" onClick={() => openAuthModal('register')}>
               List Food Free
-            </Link>
+            </button>
           </div>
           <div className="landing__hero-social-proof">
             <div className="landing__hero-avatars">
@@ -162,11 +164,12 @@ export default function LandingPage() {
             <h2>Ready to make a difference?</h2>
             <p>Join SaverFwd and start reducing food waste in your community today. It's free and takes less than 2 minutes.</p>
             <div className="landing__cta-actions">
-              <Link to="/register" className="btn btn--cta-primary btn--lg">
+              <button className="btn btn--cta-primary btn--lg" onClick={() => openAuthModal('register')}>
                 Create Free Account
                 <ArrowRight size={20} />
-              </Link>
+              </button>
               <Link to="/browse" className="btn btn--cta-ghost btn--lg">
+                <Leaf size={18} />
                 Browse Food First
               </Link>
             </div>
