@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { MapPin, Clock, Calendar, User, Navigation, MessageSquare, ArrowLeft, Leaf, Loader2, CheckCircle } from 'lucide-react';
+import { MapPin, Clock, Calendar, User, Navigation, MessageSquare, ArrowLeft, Leaf, CheckCircle, Package } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import foodApi from '../api/foodApi';
@@ -47,10 +47,10 @@ export default function FoodDetailPage() {
   if (loading) {
     return (
       <div className="food-detail">
-        <div className="food-detail__image-wrap">
-          <div className="skeleton skeleton--image" style={{ height: 300 }} />
+        <div className="food-detail__hero">
+          <div className="skeleton skeleton--image" style={{ height: 280 }} />
         </div>
-        <div className="food-detail__content">
+        <div className="food-detail__body">
           <SkeletonText width="50%" height="1.5rem" />
           <SkeletonText width="30%" />
           <SkeletonText width="100%" />
@@ -92,65 +92,79 @@ export default function FoodDetailPage() {
 
   return (
     <div className="food-detail">
-      <button className="food-detail__back" onClick={() => navigate(-1)}>
-        <ArrowLeft size={20} /> Back
-      </button>
-
-      {/* Food Image / Placeholder */}
-      <div className="food-detail__image-wrap">
-        <div className="food-detail__image-placeholder">
-          <span className="food-detail__food-icon">{getFoodTypeIcon(listing.foodType)}</span>
+      {/* Hero */}
+      <div className="food-detail__hero">
+        <button className="food-detail__back" onClick={() => navigate(-1)}>
+          <ArrowLeft size={18} /> Back
+        </button>
+        <div className="food-detail__hero-bg">
+          <span className="food-detail__hero-icon">{getFoodTypeIcon(listing.foodType)}</span>
         </div>
         {listing.status && listing.status !== 'AVAILABLE' && (
-          <Badge color={statusStyle.text} bg={statusStyle.bg} className="food-detail__status">
+          <Badge color={statusStyle.text} bg={statusStyle.bg} className="food-detail__status-badge">
             {listing.status}
           </Badge>
         )}
       </div>
 
-      <div className="food-detail__layout">
-        <div className="food-detail__main">
-          <div className="food-detail__title-row">
-            <div>
-              <h1 className="food-detail__title">{listing.title}</h1>
-              <div className="food-detail__meta">
-                <span>{getFoodTypeLabel(listing.foodType)}</span>
-                <span>·</span>
-                <span>{listing.quantity} {getUnitLabel(listing.unit)}</span>
+      {/* Body */}
+      <div className="food-detail__body">
+        <div className="food-detail__content">
+          {/* Title Card */}
+          <div className="food-detail__title-card">
+            <div className="food-detail__title-row">
+              <div className="food-detail__title-info">
+                <div className="food-detail__type-badge">
+                  <Package size={14} />
+                  <span>{getFoodTypeLabel(listing.foodType)}</span>
+                </div>
+                <h1 className="food-detail__title">{listing.title}</h1>
+                <div className="food-detail__meta">
+                  <span>{listing.quantity} {getUnitLabel(listing.unit)}</span>
+                  <span className="food-detail__meta-dot">·</span>
+                  <span>Listed by User #{listing.ownerId}</span>
+                </div>
               </div>
-            </div>
-            <div className="food-detail__price-col">
-              {isDonation ? (
-                <span className="food-detail__price food-detail__price--free">
-                  <Leaf size={16} /> FREE
-                </span>
-              ) : (
-                <span className="food-detail__price">{CURRENCY_SYMBOL}{listing.price}</span>
-              )}
+              <div className="food-detail__price-badge">
+                {isDonation ? (
+                  <span className="food-detail__price food-detail__price--free">
+                    <Leaf size={16} /> FREE
+                  </span>
+                ) : (
+                  <span className="food-detail__price">{CURRENCY_SYMBOL}{listing.price}</span>
+                )}
+              </div>
             </div>
           </div>
 
+          {/* Description */}
           {listing.description && (
-            <div className="food-detail__section">
-              <h3>Description</h3>
-              <p>{listing.description}</p>
+            <div className="food-detail__card">
+              <h3 className="food-detail__card-title">About this food</h3>
+              <p className="food-detail__description">{listing.description}</p>
             </div>
           )}
 
-          <div className="food-detail__section">
-            <h3>Pickup Details</h3>
-            <div className="food-detail__info-card">
-              <div className="food-detail__info-item">
-                <MapPin size={16} />
-                <div>
+          {/* Pickup Details */}
+          <div className="food-detail__card">
+            <h3 className="food-detail__card-title">Pickup Details</h3>
+            <div className="food-detail__info-grid">
+              <div className="food-detail__info-row">
+                <div className="food-detail__info-icon">
+                  <MapPin size={18} />
+                </div>
+                <div className="food-detail__info-content">
                   <span className="food-detail__info-label">Address</span>
                   <span className="food-detail__info-value">{listing.pickupAddress}</span>
                 </div>
               </div>
+
               {listing.pickupStartTime && (
-                <div className="food-detail__info-item">
-                  <Clock size={16} />
-                  <div>
+                <div className="food-detail__info-row">
+                  <div className="food-detail__info-icon food-detail__info-icon--blue">
+                    <Clock size={18} />
+                  </div>
+                  <div className="food-detail__info-content">
                     <span className="food-detail__info-label">Pickup Window</span>
                     <span className="food-detail__info-value">
                       {formatDate(listing.pickupStartTime)} · {formatTime(listing.pickupStartTime)}
@@ -159,36 +173,26 @@ export default function FoodDetailPage() {
                   </div>
                 </div>
               )}
+
               {listing.expiryTime && (
-                <div className="food-detail__info-item">
-                  <Calendar size={16} />
-                  <div>
+                <div className="food-detail__info-row">
+                  <div className="food-detail__info-icon food-detail__info-icon--amber">
+                    <Calendar size={18} />
+                  </div>
+                  <div className="food-detail__info-content">
                     <span className="food-detail__info-label">Expires</span>
                     <span className="food-detail__info-value">
-                      {formatDateTime(listing.expiryTime)} ({getTimeUntil(listing.expiryTime)})
+                      {formatDateTime(listing.expiryTime)}
+                      <span className="food-detail__time-until">({getTimeUntil(listing.expiryTime)})</span>
                     </span>
                   </div>
                 </div>
               )}
             </div>
           </div>
-
-          {/* Listed by */}
-          <div className="food-detail__section">
-            <h3>Listed by</h3>
-            <div className="food-detail__user">
-              <div className="food-detail__user-avatar">
-                <User size={20} />
-              </div>
-              <div>
-                <span className="food-detail__user-name">User #{listing.ownerId}</span>
-                <span className="food-detail__user-id">Listing ID: {listing.id}</span>
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Sidebar Actions */}
+        {/* Sidebar */}
         <div className="food-detail__sidebar">
           <div className="food-detail__actions-card">
             {canClaim && !claimSuccess && (
@@ -214,35 +218,37 @@ export default function FoodDetailPage() {
                     {isDonation ? 'Claim Food' : `Pay ${CURRENCY_SYMBOL}${listing.price}`}
                   </Button>
                 </div>
-                <Button fullWidth variant="secondary" as={Link} to="/messages">
+                <Link to="/messages" className="btn btn--secondary btn--full">
                   <MessageSquare size={18} /> Message User
-                </Button>
+                </Link>
               </>
             )}
 
             {canClaim && claimSuccess && (
               <div className="food-detail__claim-success">
-                <CheckCircle size={32} />
+                <div className="food-detail__success-icon">
+                  <CheckCircle size={36} />
+                </div>
                 <p className="food-detail__claim-success-title">Order Placed!</p>
                 <p className="food-detail__claim-success-text">
                   Your order has been placed successfully. Check your orders for details.
                 </p>
-                <Button fullWidth variant="secondary" as={Link} to="/orders">
+                <Link to="/orders" className="btn btn--secondary btn--full">
                   View Orders
-                </Button>
+                </Link>
               </div>
             )}
 
             {isOwner && (
-              <Button fullWidth variant="secondary" as={Link} to="/my-listings">
+              <Link to="/my-listings" className="btn btn--secondary btn--full">
                 Manage Listing
-              </Button>
+              </Link>
             )}
 
             {!canClaim && !isOwner && !claimSuccess && (
-              <p className="food-detail__unavailable">
-                This food is no longer available.
-              </p>
+              <div className="food-detail__unavailable">
+                <p>This food is no longer available.</p>
+              </div>
             )}
 
             {listing.pickupAddress && (
