@@ -133,7 +133,10 @@ export default function CreateListingPage() {
       <form onSubmit={handleSubmit} className="create-listing__form">
         {/* Basic Information */}
         <section className="create-listing__section">
-          <h2>Basic Information</h2>
+          <div className="create-listing__section-header">
+            <span className="create-listing__step-number">1</span>
+            <h2 className="create-listing__section-title">Basic Information</h2>
+          </div>
 
           <Input
             label="Food Title"
@@ -195,7 +198,10 @@ export default function CreateListingPage() {
 
         {/* Listing Details */}
         <section className="create-listing__section">
-          <h2>Listing</h2>
+          <div className="create-listing__section-header">
+            <span className="create-listing__step-number">2</span>
+            <h2 className="create-listing__section-title">Listing Type</h2>
+          </div>
 
           <div className="create-listing__listing-types">
             <label className={`create-listing__type-card ${formData.listingType === 'DONATION' ? 'create-listing__type-card--active' : ''}`}>
@@ -243,7 +249,10 @@ export default function CreateListingPage() {
 
         {/* Expiry */}
         <section className="create-listing__section">
-          <h2>Expiry</h2>
+          <div className="create-listing__section-header">
+            <span className="create-listing__step-number">3</span>
+            <h2 className="create-listing__section-title">Expiry Details</h2>
+          </div>
           <div className="create-listing__row">
             <Input
               label="Expiry Date"
@@ -269,7 +278,10 @@ export default function CreateListingPage() {
 
         {/* Pickup */}
         <section className="create-listing__section">
-          <h2>Pickup Details</h2>
+          <div className="create-listing__section-header">
+            <span className="create-listing__step-number">4</span>
+            <h2 className="create-listing__section-title">Pickup Details</h2>
+          </div>
 
           <Input
             label="Pickup Address"
