@@ -61,4 +61,9 @@ public class NotificationService {
             return notificationMapper.toNotificationResponse(notification);
         }).orElseThrow(() -> new ResourceNotFoundException(String.format("Notification with id: %s not found", notificationId)));
     }
+
+    @Transactional
+    public void deleteNotificationById(Long notificationId){
+        notificationRepository.deleteById(notificationId);
+    }
 }

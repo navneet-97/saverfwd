@@ -50,4 +50,11 @@ public class NotificationController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Notification updated!", notificationService.readNotificationById(notificationId)));
     }
+
+    @DeleteMapping("/{notificationId}")
+    public ResponseEntity<ApiResponse<Void>> deleteNotification(@PathVariable("notificationId") Long notificationId){
+        notificationService.deleteNotificationById(notificationId);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Mapper.toApiResponse("Notification deleted!", null));
+    }
 }
