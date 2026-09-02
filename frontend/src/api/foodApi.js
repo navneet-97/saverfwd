@@ -1,28 +1,5 @@
 import apiClient, { unwrapOrThrow } from './client';
-
-/**
- * Build query params with proper prefix nesting for Spring Boot @ModelAttribute binding.
- * Backend expects: ?filter.title=xyz&filter.foodType=PREPARED_MEAL&pageable.page=0&pageable.size=12
- */
-function buildParams(filter = {}, pageable = {}) {
-  const params = {};
-
-  // Filter params — only include non-empty values
-  Object.entries(filter).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
-      params[`filter.${key}`] = value;
-    }
-  });
-
-  // Pageable params
-  Object.entries(pageable).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== '') {
-      params[`pageable.${key}`] = value;
-    }
-  });
-
-  return params;
-}
+import { buildParams } from '../utils/apiHelpers';
 
 const foodApi = {
   /**
