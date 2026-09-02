@@ -29,4 +29,13 @@ public class MessageController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Message found!", messageService.getMessageById(messageId)));
     }
+
+    @PatchMapping("/{messageId}")
+    public ResponseEntity<ApiResponse<MessageResponse>> updateMessage(
+            @PathVariable("messageId") Long messageId,
+            @RequestParam(name = "content", required = false) String content
+    ) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Mapper.toApiResponse("Message updated!", messageService.updateMessage(messageId, content)));
+    }
 }

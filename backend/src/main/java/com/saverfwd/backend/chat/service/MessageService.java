@@ -11,6 +11,7 @@ import com.saverfwd.backend.common.util.Common;
 import com.saverfwd.backend.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +20,7 @@ public class MessageService {
     private final ChatRepository chatRepository;
     private final MessageMapper messageMapper;
 
+    @Transactional
     public MessageResponse postMessage(CreateMessageRequest request) {
         User user = Common.getCurrentUser();
         return chatRepository.findById(request.chatId()).map(chat -> {
@@ -32,9 +34,20 @@ public class MessageService {
         }).orElseThrow(() -> new ResourceNotFoundException(String.format("Chat with id: %s not found", request.chatId())));
     }
 
+    @Transactional(readOnly = true)
     public MessageResponse getMessageById(Long messageId) {
         return messageRepository.findById(messageId)
                 .map(messageMapper::toMessageResponse)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Message with id: %s not found", messageId)));
+    }
+
+    @Transactional
+    public MessageResponse updateMessage(Long messageId, String content) {
+        return messageRepository.findById(messageId).map(message -> {
+            if (content != null && !content.isBlank()) {
+                message.setContent(content);
+            }
+            return messageMapper.toMessageResponse(message);
+        }).orElseThrow(() -> new ResourceNotFoundException(String.format("Message with id: %s not found", messageId)));
     }
 }
