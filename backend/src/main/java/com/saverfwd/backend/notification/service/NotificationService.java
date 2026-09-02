@@ -9,6 +9,7 @@ import com.saverfwd.backend.notification.repository.NotificationRepository;
 import com.saverfwd.backend.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +19,7 @@ public class NotificationService {
     private final UserRepository userRepository;
     private final NotificationMapper notificationMapper;
 
+    @Transactional
     public NotificationResponse sendNotification(CreateNotificationRequest request){
         return userRepository.findById(request.userId()).map(user -> {
             Notification notification = notificationMapper.toNotification(request);
@@ -27,5 +29,11 @@ public class NotificationService {
             Notification savedNotification = notificationRepository.save(notification);
             return notificationMapper.toNotificationResponse(savedNotification);
         }).orElseThrow(() -> new ResourceNotFoundException(String.format("User with id: %s not found", request.userId())));
+    }
+
+    public NotificationResponse getNotificationById(Long notificationId){
+        return notificationRepository.findById(notificationId)
+                .map(notificationMapper::toNotificationResponse)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Notification with id: %s not found", notificationId)));
     }
 }
