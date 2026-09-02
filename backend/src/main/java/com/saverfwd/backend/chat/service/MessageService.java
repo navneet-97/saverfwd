@@ -50,4 +50,11 @@ public class MessageService {
             return messageMapper.toMessageResponse(message);
         }).orElseThrow(() -> new ResourceNotFoundException(String.format("Message with id: %s not found", messageId)));
     }
+
+    public MessageResponse readMessage(Long messageId) {
+        return messageRepository.findById(messageId).map(message -> {
+            message.setRead(true);
+            return messageMapper.toMessageResponse(message);
+        }).orElseThrow(() -> new ResourceNotFoundException(String.format("Message with id: %s not found", messageId)));
+    }
 }
