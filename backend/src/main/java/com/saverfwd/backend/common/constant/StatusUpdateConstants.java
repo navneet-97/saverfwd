@@ -2,6 +2,7 @@ package com.saverfwd.backend.common.constant;
 
 import com.saverfwd.backend.food.enums.FoodStatus;
 import com.saverfwd.backend.order.enums.OrderStatus;
+import com.saverfwd.backend.pickup.entity.PickupStatus;
 
 import java.util.Map;
 import java.util.Set;
@@ -30,5 +31,16 @@ public final class StatusUpdateConstants {
     public static final Set<OrderStatus> TERMINAL_ORDER_STATUSES = Set.of(
             OrderStatus.CANCELLED,
             OrderStatus.COMPLETED
+    );
+
+    public static final Map<PickupStatus, Set<PickupStatus>> ALLOWED_PICKUP_TRANSITIONS = Map.of(
+            PickupStatus.SCHEDULED, Set.of(PickupStatus.READY),
+            PickupStatus.READY, Set.of(PickupStatus.PICKED_UP, PickupStatus.MISSED, PickupStatus.CANCELLED)
+    );
+
+    public static final Set<PickupStatus> TERMINAL_PICKUP_STATUSES = Set.of(
+            PickupStatus.CANCELLED,
+            PickupStatus.PICKED_UP,
+            PickupStatus.MISSED
     );
 }
