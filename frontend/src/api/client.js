@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL + '/api' || 'http://localhost:8000/api';
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000') + '/api';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -83,7 +83,7 @@ apiClient.interceptors.response.use(
           processQueue(refreshError, null);
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
-          window.location.href = '/login';
+          window.location.href = '/';
           return Promise.reject(refreshError);
         } finally {
           isRefreshing = false;
@@ -91,7 +91,7 @@ apiClient.interceptors.response.use(
       } else {
         localStorage.removeItem('accessToken');
         localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
+        window.location.href = '/';
       }
     }
 
