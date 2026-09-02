@@ -1,13 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Package } from 'lucide-react';
+import { Package, Tag, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import foodApi from '../api/foodApi';
 import { useToast } from '../context/ToastContext';
 import Tabs from '../components/common/Tabs';
 import Badge from '../components/common/Badge';
 import EmptyState from '../components/common/EmptyState';
 import { SkeletonList } from '../components/common/SkeletonLoader';
-import { STATUS_COLORS, CURRENCY_SYMBOL, getUnitLabel } from '../utils/constants';
+import { STATUS_COLORS, CURRENCY_SYMBOL, getUnitLabel, getFoodTypeIcon } from '../utils/constants';
 import { formatDate, formatTime } from '../utils/formatters';
 import './MyListingsPage.css';
 
@@ -76,14 +76,56 @@ export default function MyListingsPage() {
     }
   };
 
+  const statusCounts = useMemo(() => {
+    const counts = {};
+    allListings.forEach((l) => {
+      counts[l.status] = (counts[l.status] || 0) + 1;
+    });
+    return counts;
+  }, [allListings]);
+
   return (
     <div className="my-listings">
       <div className="my-listings__header">
-        <h1>My Listings</h1>
+        <div>
+          <h1>My Listings</h1>
+          <p className="my-listings__subtitle">
+            {allListings.length > 0
+              ? `You have ${allListings.length} listing${allListings.length !== 1 ? 's' : ''} total`
+              : 'Manage your food listings in one place'
+            }
+          </p>
+        </div>
         <Link to="/create-listing" className="btn btn--primary">
           + List Food
         </Link>
       </div>
+
+      {/* Stats Summary */}
+      {!loading && allListings.length > 0 && (
+        <div className="my-listings__stats">
+          <div className="my-listings__stat">
+            <Package size={16} color="var(--color-primary)" />
+            <span className="my-listings__stat-value">{allListings.length}</span>
+            <span className="my-listings__stat-label">Total</span>
+          </div>
+          <div className="my-listings__stat">
+            <Tag size={16} color="var(--color-info)" />
+            <span className="my-listings__stat-value">{statusCounts.AVAILABLE || 0}</span>
+            <span className="my-listings__stat-label">Available</span>
+          </div>
+          <div className="my-listings__stat">
+            <CheckCircle size={16} color="var(--color-success)" />
+            <span className="my-listings__stat-value">{statusCounts.SOLD || 0}</span>
+            <span className="my-listings__stat-label">Sold</span>
+          </div>
+          <div className="my-listings__stat">
+            <AlertCircle size={16} color="var(--color-warning)" />
+            <span className="my-listings__stat-value">{statusCounts.EXPIRED || 0}</span>
+            <span className="my-listings__stat-label">Expired</span>
+          </div>
+        </div>
+      )}
 
       <Tabs tabs={TABS} activeTab={activeTab} onTabChange={handleTabChange} />
 
@@ -92,19 +134,19 @@ export default function MyListingsPage() {
       ) : paginatedListings.length > 0 ? (
         <>
           <div className="my-listings__list">
-            {paginatedListings.map((listing) => {
+            {paginatedListings.map((listing, index) => {
               const statusStyle = STATUS_COLORS[listing.status] || {};
+              const statusKey = (listing.status || '').toLowerCase();
+              const isDonation = listing.listingType === 'DONATION';
               return (
-                <div key={listing.id} className="my-listings__item">
+                <div
+                  key={listing.id}
+                  className={`my-listings__item my-listings__item--${statusKey}`}
+                  style={{ '--index': index }}
+                >
                   <div className="my-listings__item-thumb">
                     <span className="my-listings__item-emoji">
-                      {listing.foodType === 'PREPARED_MEAL' ? '🍽️' :
-                       listing.foodType === 'BAKERY' ? '🥐' :
-                       listing.foodType === 'FRUITS' ? '🍎' :
-                       listing.foodType === 'VEGETABLES' ? '🥬' :
-                       listing.foodType === 'DAIRY' ? '🧀' :
-                       listing.foodType === 'PACKAGED_FOOD' ? '📦' :
-                       listing.foodType === 'BEVERAGES' ? '🥤' : '🍽️'}
+                      {getFoodTypeIcon(listing.foodType)}
                     </span>
                   </div>
                   <div className="my-listings__item-info">
@@ -115,14 +157,24 @@ export default function MyListingsPage() {
                       <Badge color={statusStyle.text} bg={statusStyle.bg}>
                         {listing.status}
                       </Badge>
+                      {isDonation && (
+                        <span className="my-listings__donation-badge">FREE</span>
+                      )}
                     </div>
                     <div className="my-listings__item-meta">
                       <span className="my-listings__item-price">
-                        {listing.listingType === 'DONATION' ? 'FREE' : `${CURRENCY_SYMBOL}${listing.price}`}
+                        {isDonation ? 'Free donation' : `${CURRENCY_SYMBOL}${listing.price}`}
                       </span>
+                      <span className="my-listings__meta-sep">·</span>
                       <span>{listing.quantity} {getUnitLabel(listing.unit)}</span>
                       {listing.expiryTime && (
-                        <span>Expires: {formatDate(listing.expiryTime)}</span>
+                        <>
+                          <span className="my-listings__meta-sep">·</span>
+                          <span className="my-listings__item-expiry">
+                            <Clock size={11} />
+                            Expires {formatDate(listing.expiryTime)}
+                          </span>
+                        </>
                       )}
                     </div>
                     {listing.pickupStartTime && (
@@ -133,12 +185,12 @@ export default function MyListingsPage() {
                     )}
                   </div>
                   <div className="my-listings__item-actions">
-                    <Link to={`/food/${listing.id}`} className="btn btn--ghost btn--sm">
+                    <Link to={`/food/${listing.id}`} className="btn btn--sm my-listings__view-btn">
                       View
                     </Link>
                     {listing.status === 'AVAILABLE' && (
                       <button
-                        className="btn btn--ghost btn--sm btn--danger"
+                        className="btn btn--sm my-listings__cancel-btn"
                         onClick={() => handleCancel(listing.id)}
                       >
                         Cancel
@@ -150,7 +202,7 @@ export default function MyListingsPage() {
             })}
           </div>
           {filteredTotalPages > 1 && (
-            <div className="browse__pagination">
+            <div className="my-listings__pagination">
               <button
                 className="btn btn--ghost btn--sm"
                 disabled={page === 0}
@@ -158,7 +210,7 @@ export default function MyListingsPage() {
               >
                 Previous
               </button>
-              <span className="browse__results-count">
+              <span className="my-listings__page-info">
                 Page {page + 1} of {filteredTotalPages}
               </span>
               <button
