@@ -1,22 +1,44 @@
 import { useState, useEffect } from 'react';
-import { Mail, Phone, Package, ShoppingBag, Leaf } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Mail, Phone, Package, ShoppingBag, Leaf, Star } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import foodApi from '../api/foodApi';
-import Button from '../components/common/Button';
+import orderApi from '../api/orderApi';
+import ratingApi from '../api/ratingApi';
 import './ProfilePage.css';
 
 export default function ProfilePage() {
   const { user } = useAuth();
 
-  const [stats, setStats] = useState(null);
+  const [stats, setStats] = useState({
+    foodListed: 0,
+    ordersPlaced: 0,
+    averageRating: 0,
+    totalRatings: 0,
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const result = await foodApi.getMyListings({ page: 0, size: 1 });
+        const [listingsRes, ordersRes, ratingsRes] = await Promise.allSettled([
+          foodApi.getMyListings({ page: 0, size: 1 }),
+          orderApi.getOrders({}, { page: 0, size: 1 }),
+          ratingApi.getRatings({}, { page: 0, size: 1 }),
+        ]);
+
+        const foodListed = listingsRes.status === 'fulfilled'
+          ? (listingsRes.value?.totalElements || 0) : 0;
+        const ordersPlaced = ordersRes.status === 'fulfilled'
+          ? (ordersRes.value?.totalElements || 0) : 0;
+        const totalRatings = ratingsRes.status === 'fulfilled'
+          ? (ratingsRes.value?.totalElements || 0) : 0;
+
         setStats({
-          foodListed: result?.totalElements || 0,
+          foodListed,
+          ordersPlaced,
+          totalRatings,
+          averageRating: 0,
         });
       } catch {
         // silent
@@ -64,27 +86,40 @@ export default function ProfilePage() {
           </span>
         )}
 
-        <Button variant="secondary" disabled>
-          Edit Profile (Coming Soon)
-        </Button>
+        <div className="profile__card-actions">
+          <Link to="/my-listings" className="btn btn--primary btn--sm">
+            <Package size={16} /> My Listings
+          </Link>
+          <Link to="/orders" className="btn btn--secondary btn--sm">
+            <ShoppingBag size={16} /> My Orders
+          </Link>
+          <Link to="/ratings" className="btn btn--ghost btn--sm">
+            <Star size={16} /> My Ratings
+          </Link>
+        </div>
       </div>
 
       {/* Stats */}
       <div className="profile__stats">
         <div className="profile__stat-card">
           <Package size={24} color="var(--color-primary)" />
-          <span className="profile__stat-value">{loading ? '—' : (stats?.foodListed ?? 0)}</span>
+          <span className="profile__stat-value">{loading ? '—' : stats.foodListed}</span>
           <span className="profile__stat-label">Food Listed</span>
         </div>
         <div className="profile__stat-card">
           <ShoppingBag size={24} color="var(--color-info)" />
-          <span className="profile__stat-value">—</span>
-          <span className="profile__stat-label">Claimed/Sold</span>
+          <span className="profile__stat-value">{loading ? '—' : stats.ordersPlaced}</span>
+          <span className="profile__stat-label">Orders Placed</span>
         </div>
+        <Link to="/ratings" className="profile__stat-card profile__stat-card--link">
+          <Star size={24} color="#eab308" />
+          <span className="profile__stat-value">{loading ? '—' : stats.totalRatings}</span>
+          <span className="profile__stat-label">Ratings Received</span>
+        </Link>
         <div className="profile__stat-card">
           <Leaf size={24} color="var(--color-success)" />
-          <span className="profile__stat-value">—</span>
-          <span className="profile__stat-label">Food Saved</span>
+          <span className="profile__stat-value">{loading ? '—' : stats.foodListed + stats.ordersPlaced}</span>
+          <span className="profile__stat-label">Total Activity</span>
         </div>
       </div>
     </div>
