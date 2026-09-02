@@ -44,4 +44,10 @@ public class NotificationController {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Notifications found!", pageResponse));
     }
+
+    @PatchMapping("/{notificationId}/read")
+    public ResponseEntity<ApiResponse<NotificationResponse>> readNotification(@PathVariable("notificationId") Long notificationId){
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Mapper.toApiResponse("Notification updated!", notificationService.readNotificationById(notificationId)));
+    }
 }

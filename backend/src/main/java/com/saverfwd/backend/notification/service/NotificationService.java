@@ -53,4 +53,12 @@ public class NotificationService {
 
         return Mapper.toPageResponse(page);
     }
+
+    @Transactional
+    public NotificationResponse readNotificationById(Long notificationId){
+        return notificationRepository.findById(notificationId).map(notification -> {
+            notification.setRead(true);
+            return notificationMapper.toNotificationResponse(notification);
+        }).orElseThrow(() -> new ResourceNotFoundException(String.format("Notification with id: %s not found", notificationId)));
+    }
 }
