@@ -6,6 +6,7 @@ import com.saverfwd.backend.common.response.PageResponse;
 import com.saverfwd.backend.rating.dto.PostRatingRequest;
 import com.saverfwd.backend.rating.dto.RatingResponse;
 import com.saverfwd.backend.rating.dto.RatingSearchFilter;
+import com.saverfwd.backend.rating.dto.UpdateRatingRequest;
 import com.saverfwd.backend.rating.service.RatingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -42,5 +43,11 @@ public class RatingController {
     public ResponseEntity<ApiResponse<RatingResponse>> getRatingById(@PathVariable("ratingId") Long ratingId) {
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Rating Found!", ratingService.getRatingById(ratingId)));
+    }
+
+    @PatchMapping("/{ratingId}")
+    public ResponseEntity<ApiResponse<RatingResponse>> updateRating(@PathVariable("ratingId") Long ratingId, @Valid @RequestBody UpdateRatingRequest request) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(Mapper.toApiResponse("Rating Updated!", ratingService.updateRating(ratingId, request)));
     }
 }

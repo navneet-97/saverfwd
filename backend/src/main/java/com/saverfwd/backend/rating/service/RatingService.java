@@ -8,6 +8,7 @@ import com.saverfwd.backend.order.repository.OrderRepository;
 import com.saverfwd.backend.rating.dto.PostRatingRequest;
 import com.saverfwd.backend.rating.dto.RatingResponse;
 import com.saverfwd.backend.rating.dto.RatingSearchFilter;
+import com.saverfwd.backend.rating.dto.UpdateRatingRequest;
 import com.saverfwd.backend.rating.entity.Rating;
 import com.saverfwd.backend.rating.mapper.RatingMapper;
 import com.saverfwd.backend.rating.repository.RatingRepository;
@@ -59,5 +60,18 @@ public class RatingService {
         return ratingRepository.findById(id)
                 .map(ratingMapper::toRatingResponse)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Rating with id: %s not found", id)));
+    }
+
+    @Transactional
+    public RatingResponse updateRating(Long id, UpdateRatingRequest request) {
+        return ratingRepository.findById(id).map(rating -> {
+            if (request.ratingValue() != null) {
+                rating.setRatingValue(request.ratingValue());
+            }
+            if (request.comment() != null && !request.comment().isBlank()) {
+                rating.setComment(request.comment());
+            }
+            return ratingMapper.toRatingResponse(rating);
+        }).orElseThrow(() -> new ResourceNotFoundException(String.format("Rating with id: %s not found", id)));
     }
 }
