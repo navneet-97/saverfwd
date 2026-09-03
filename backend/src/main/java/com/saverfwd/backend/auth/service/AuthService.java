@@ -1,6 +1,9 @@
 package com.saverfwd.backend.auth.service;
 
+import com.saverfwd.backend.auth.dtos.ResetPasswordRequest;
+import com.saverfwd.backend.auth.entity.Otp;
 import com.saverfwd.backend.auth.entity.RefreshToken;
+import com.saverfwd.backend.auth.repository.OtpRepository;
 import com.saverfwd.backend.auth.repository.RefreshTokenRepository;
 import com.saverfwd.backend.auth.response.AuthResponse;
 import com.saverfwd.backend.auth.response.TokenResponse;
@@ -18,6 +21,7 @@ import com.saverfwd.backend.user.mapper.UserMapper;
 import com.saverfwd.backend.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,6 +30,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -35,6 +40,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final AuthenticationManager authenticationManager;
     private final TokenService tokenService;
+    private final OtpRepository otpRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
     private final BlacklistService blacklistService;
@@ -96,7 +102,7 @@ public class AuthService {
     public AuthResponse loginUser(UserLoginRequest request) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.username().trim(),
+                        request.email().trim(),
                         request.password()
                 )
         );
@@ -154,6 +160,34 @@ public class AuthService {
                 userMapper.toUserResponse(user),
                 generateTokens(user, version)
         );
+    }
+
+    public ApiResponse<String> forgotPassword(String email) {
+        return userRepository.findByEmail(email).map(user -> {
+            String otp = RandomStringUtils.randomNumeric(6);
+
+            Otp code = Otp.builder()
+                    .otp(otp)
+                    .user(user)
+                    .build();
+            otpRepository.save(code);
+            return Mapper.toApiResponse("Code:", otp);
+        }).orElseThrow(() -> new ResourceNotFoundException(String.format("User not found with %s", email)));
+    }
+
+    @Transactional
+    public ApiResponse<Object> resetPassword(ResetPasswordRequest request) {
+        return otpRepository.findByOtp(request.otp()).map(otp -> {
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime created = otp.getCreatedAt();
+            if (created.plusMinutes(1).isBefore(now)){
+                throw new BusinessException("Code expired");
+            }
+
+            User user = otp.getUser();
+            user.setPassword(passwordEncoder.encode(request.password()));
+            return Mapper.toApiResponse("Password reset successfully!", null);
+        }).orElseThrow(() -> new ResourceNotFoundException("Invalid code"));
     }
 
     private TokenResponse generateTokens(User user, long version) {
