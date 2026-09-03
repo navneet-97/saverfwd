@@ -345,3 +345,9 @@
   font-size: var(--font-size-sm);
   margin-bottom: var(--space-5);
 }
+
+.dashboard__empty .btn {
+  padding: var(--space-3) var(--space-5);
+  min-height: 40px;
+  border-radius: var(--radius-xl);
+}

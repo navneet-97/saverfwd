@@ -6,6 +6,7 @@ export default function Input({
   type = 'text',
   className = '',
   required,
+  rightAdornment,
   ...props
 }) {
   return (
@@ -16,7 +17,10 @@ export default function Input({
           {required && <span className="input-required">*</span>}
         </label>
       )}
-      <input type={type} className="input" {...props} />
+      <div className={`input-wrap${rightAdornment ? ' input-wrap--adorned' : ''}`}>
+        <input type={type} className="input" {...props} />
+        {rightAdornment}
+      </div>
       {error && <p className="input-error">{error}</p>}
     </div>
   );
