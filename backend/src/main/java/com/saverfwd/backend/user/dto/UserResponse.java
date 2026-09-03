@@ -2,7 +2,7 @@ package com.saverfwd.backend.user.dto;
 
 import lombok.Builder;
 
-import java.sql.Date;
+import java.time.LocalDateTime;
 
 @Builder
 public record UserResponse(
@@ -12,6 +12,6 @@ public record UserResponse(
         String phoneNumber,
         String role,
         String accountStatus,
-        Date createdAt
+        LocalDateTime createdAt
 ) {
 }
