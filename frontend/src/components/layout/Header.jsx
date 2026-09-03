@@ -45,6 +45,15 @@ export default function Header() {
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
+  // Close the profile dropdown and mobile menu when the user logs out,
+  // so they don't reappear already-open after the next login.
+  useEffect(() => {
+    if (!user) {
+      setDropdownOpen(false);
+      setMobileMenuOpen(false);
+    }
+  }, [user]);
+
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
