@@ -25,6 +25,17 @@ const authApi = {
     return body;
   },
 
+  forgotPassword: async (email) => {
+    const response = await apiClient.post('/auth/forgot-password', null, { params: { email } });
+    // ApiResponse<String>: data holds the one-time code (backend has no mailer yet)
+    return unwrapOrThrow(response);
+  },
+
+  resetPassword: async (data) => {
+    const response = await apiClient.patch('/auth/reset-password', data);
+    return unwrapOrThrow(response);
+  },
+
   logout: async (refreshToken) => {
     const response = await apiClient.post('/auth/logout', { refreshToken });
     return unwrapOrThrow(response);
