@@ -41,7 +41,9 @@ apiClient.interceptors.response.use(
     // Skip refresh for auth endpoints themselves
     const isAuthRequest = originalRequest.url?.includes('/auth/login') ||
       originalRequest.url?.includes('/auth/register') ||
-      originalRequest.url?.includes('/auth/refresh');
+      originalRequest.url?.includes('/auth/refresh') ||
+      originalRequest.url?.includes('/auth/forgot-password') ||
+      originalRequest.url?.includes('/auth/reset-password');
 
     if (error.response?.status === 401 && !originalRequest._retry && !isAuthRequest) {
       if (isRefreshing) {

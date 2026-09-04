@@ -128,6 +128,7 @@
   --z-modal-backdrop: 300;
   --z-modal: 400;
   --z-nav: 500;
-  --z-toast: 600;
+  /* Toasts must sit above every modal/overlay (auth modal overlay is 9999) */
+  --z-toast: 10000;
   --z-tooltip: 700;
 }

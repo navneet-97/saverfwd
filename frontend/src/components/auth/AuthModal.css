@@ -278,6 +278,17 @@
   margin: 0 auto;
 }
 
+/* Resend code link */
+.auth-modal__resend {
+  margin: 0 auto;
+  width: fit-content;
+}
+
+.auth-modal__resend:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Back to login button */
 .auth-modal__back {
   display: flex;

@@ -4,21 +4,22 @@ export const validateEmail = (email) => {
   return '';
 };
 
+// Backend pattern: ^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$
+export const PASSWORD_HINT =
+  'Minimum 8 characters with uppercase, lowercase, number, and special character.';
+
+export const PASSWORD_REQUIREMENTS_ERROR = 'Password must meet the requirements.';
+
+export const isPasswordValid = (password = '') =>
+  password.length >= 8 &&
+  /[A-Z]/.test(password) &&
+  /[a-z]/.test(password) &&
+  /\d/.test(password) &&
+  /[^a-zA-Z0-9]/.test(password);
+
 export const validatePassword = (password) => {
   if (!password) return 'Password is required';
-  // Backend pattern: ^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d]).{8,}$
-  if (password.length < 8) return 'Password must be at least 8 characters';
-  if (!/[a-z]/.test(password)) return 'Password must contain a lowercase letter';
-  if (!/[A-Z]/.test(password)) return 'Password must contain an uppercase letter';
-  if (!/\d/.test(password)) return 'Password must contain a number';
-  if (!/[^a-zA-Z\d]/.test(password)) return 'Password must contain a special character';
-  return '';
-};
-
-export const validateConfirmPassword = (password, confirm) => {
-  if (!confirm) return 'Please confirm your password';
-  if (password !== confirm) return 'Passwords do not match';
-  return '';
+  return isPasswordValid(password) ? '' : PASSWORD_REQUIREMENTS_ERROR;
 };
 
 export const validatePhoneNumber = (phone) => {
@@ -153,7 +154,8 @@ export const validateFoodListing = (data) => {
 
 export const validateLogin = (data) => {
   const errors = {};
-  if (!data.email) errors.email = 'Email is required';
+  const emailError = validateEmail(data.email);
+  if (emailError) errors.email = emailError;
   if (!data.password) errors.password = 'Password is required';
   return errors;
 };
@@ -173,9 +175,6 @@ export const validateRegister = (data) => {
 
   const pwError = validatePassword(data.password);
   if (pwError) errors.password = pwError;
-
-  const confirmError = validateConfirmPassword(data.password, data.confirmPassword);
-  if (confirmError) errors.confirmPassword = confirmError;
 
   return errors;
 };

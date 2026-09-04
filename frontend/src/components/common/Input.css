@@ -54,6 +54,36 @@
   color: var(--color-text-muted);
 }
 
+/* Wrapper used when an Input has a trailing adornment (e.g. show/hide password) */
+.input-wrap {
+  position: relative;
+}
+
+.input-wrap--adorned .input {
+  padding-right: var(--space-10);
+}
+
+.input-wrap__adornment {
+  position: absolute;
+  right: var(--space-2);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1);
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: color 200ms ease;
+}
+
+.input-wrap__adornment:hover {
+  color: var(--color-text);
+}
+
 .input--select {
   appearance: none;
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");

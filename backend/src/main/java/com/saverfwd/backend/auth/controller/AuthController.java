@@ -1,6 +1,7 @@
 package com.saverfwd.backend.auth.controller;
 
 import com.saverfwd.backend.auth.dtos.RefreshTokenRequest;
+import com.saverfwd.backend.auth.dtos.ResetPasswordRequest;
 import com.saverfwd.backend.auth.dtos.UserLoginRequest;
 import com.saverfwd.backend.auth.dtos.UserRegisterRequest;
 import com.saverfwd.backend.auth.response.AuthResponse;
@@ -8,9 +9,11 @@ import com.saverfwd.backend.auth.service.AuthService;
 import com.saverfwd.backend.common.response.ApiResponse;
 import com.saverfwd.backend.user.dto.UserResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,6 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Validated
 public class AuthController {
 
     private final AuthService authService;
@@ -55,5 +59,15 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refreshAccessToken(@Valid @RequestBody RefreshTokenRequest request) {
         return new ResponseEntity<>(authService.refreshAccessToken(request.refreshToken()), HttpStatus.OK);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestParam("email") @NotBlank(message = "Email is required") String email) {
+        return new ResponseEntity<>(authService.forgotPassword(email), HttpStatus.CREATED);
+    }
+
+    @PatchMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Object>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        return new ResponseEntity<>(authService.resetPassword(request), HttpStatus.OK);
     }
 }
