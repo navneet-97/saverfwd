@@ -10,6 +10,7 @@ import com.saverfwd.backend.rating.dto.UpdateRatingRequest;
 import com.saverfwd.backend.rating.service.RatingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -19,12 +20,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/rating")
+@Slf4j
 public class RatingController {
 
     private final RatingService ratingService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<RatingResponse>> postRating(@Valid @RequestBody PostRatingRequest postRatingRequest) {
+        log.info("Posting rating request: {}", postRatingRequest);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Mapper.toApiResponse("Rating Created!", ratingService.postRating(postRatingRequest)));
     }
@@ -34,6 +37,7 @@ public class RatingController {
             @Valid @ModelAttribute RatingSearchFilter filter,
             @PageableDefault(page = 0, size = 10) Pageable pageable
     ) {
+        log.info("Getting ratings request with filter: {}", filter);
         PageResponse<RatingResponse> pageResponse = ratingService.getRatings(filter, pageable);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Rating Found!", pageResponse));
@@ -41,18 +45,21 @@ public class RatingController {
 
     @GetMapping("/{ratingId}")
     public ResponseEntity<ApiResponse<RatingResponse>> getRatingById(@PathVariable("ratingId") Long ratingId) {
+        log.info("Getting rating request with id {}", ratingId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Rating Found!", ratingService.getRatingById(ratingId)));
     }
 
     @PatchMapping("/{ratingId}")
     public ResponseEntity<ApiResponse<RatingResponse>> updateRating(@PathVariable("ratingId") Long ratingId, @Valid @RequestBody UpdateRatingRequest request) {
+        log.info("Updating rating request with id {}", ratingId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Rating Updated!", ratingService.updateRating(ratingId, request)));
     }
 
     @DeleteMapping("/{ratingId}")
     public ResponseEntity<ApiResponse<Void>> deleteRating(@PathVariable("ratingId") Long ratingId) {
+        log.info("Deleting rating request with id {}", ratingId);
         ratingService.deleteRating(ratingId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Rating Deleted", null));
