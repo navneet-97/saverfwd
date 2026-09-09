@@ -6,8 +6,11 @@ import com.saverfwd.backend.auth.dtos.UserLoginRequest;
 import com.saverfwd.backend.auth.dtos.UserRegisterRequest;
 import com.saverfwd.backend.auth.response.AuthResponse;
 import com.saverfwd.backend.auth.service.AuthService;
+import com.saverfwd.backend.common.exception.TooManyRequestsException;
 import com.saverfwd.backend.common.response.ApiResponse;
+import com.saverfwd.backend.common.service.RateLimitingService;
 import com.saverfwd.backend.user.dto.UserResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -25,9 +29,13 @@ import java.util.List;
 public class AuthController {
 
     private final AuthService authService;
+    private final RateLimitingService rateLimitingService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody UserRegisterRequest request) {
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody UserRegisterRequest request, HttpServletRequest httpServletRequest) {
+        if (!rateLimitingService.allowRegisterRequest(request.email(), httpServletRequest)) {
+            throw new TooManyRequestsException("Too many registration requests");
+        }
         return new ResponseEntity<>(authService.registerUser(request), HttpStatus.CREATED);
     }
 

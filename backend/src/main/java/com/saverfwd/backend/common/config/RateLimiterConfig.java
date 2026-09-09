@@ -1,22 +1,27 @@
 package com.saverfwd.backend.common.config;
 
 import io.github.bucket4j.Bandwidth;
-import io.github.bucket4j.BandwidthBuilder;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Refill;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.time.Instant;
 
-@Configuration
+@Component
 public class RateLimiterConfig {
 
-    @Bean
-    public Bucket bucket() {
-        Refill refill = Refill.intervally(10, Duration.ofMinutes(1));
-        Bandwidth bandwidth = Bandwidth.classic(10, refill);
+    public Bucket createEmailBucket() {
+        Refill refill = Refill.greedy(5, Duration.ofHours(1));
+        Bandwidth bandwidth = Bandwidth.classic(5, refill);
+
+        return Bucket.builder()
+                .addLimit(bandwidth)
+                .build();
+    }
+
+    public Bucket createIpBucket() {
+        Refill refill = Refill.greedy(20, Duration.ofHours(1));
+        Bandwidth bandwidth = Bandwidth.classic(20, refill);
 
         return Bucket.builder()
                 .addLimit(bandwidth)

@@ -52,6 +52,16 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(TooManyRequestsException.class)
+    public ResponseEntity<ErrorResponse<String>> handleTooManyRequestsException(TooManyRequestsException e, HttpServletRequest req) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(Mapper.toErrorResponse(
+                        "Too many requests. Please try again later.",
+                        e.getMessage(),
+                        req
+                ));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse<Object>> handleMethodArgumentNotValidException(MethodArgumentNotValidException e, HttpServletRequest req) {
         Map<String, List<String>> errors = new HashMap<>();
