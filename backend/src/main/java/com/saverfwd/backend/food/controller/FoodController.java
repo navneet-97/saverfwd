@@ -10,6 +10,7 @@ import com.saverfwd.backend.food.dto.UpdateFoodStatusRequest;
 import com.saverfwd.backend.food.service.FoodService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/food")
 @RequiredArgsConstructor
@@ -27,12 +29,14 @@ public class FoodController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<FoodResponse>> addFood(@Valid @RequestBody CreateFoodRequest request) {
+        log.info("Received adding food request {}", request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Mapper.toApiResponse("Food created!",foodService.addFoodItem(request)));
     }
 
     @PostMapping("/bulk")
     public ResponseEntity<ApiResponse<List<FoodResponse>>> addBulkFood(@RequestBody List<@Valid CreateFoodRequest> request) {
+        log.info("Received adding multiple food request {}", request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Mapper.toApiResponse("Bulk Food Added!", foodService.addBulkFood(request)));
 
@@ -40,6 +44,7 @@ public class FoodController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<FoodResponse>> getFoodById(@PathVariable Long id) {
+        log.info("Received getting food by id {}", id);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Requested Food Item", foodService.getFoodById(id)));
     }
@@ -50,7 +55,7 @@ public class FoodController {
             @PageableDefault(page = 0, size = 10)
             Pageable pageable
             ) {
-
+        log.info("Received getting all food items by filter {}", filter);
         PageResponse<FoodResponse> response = foodService.getAllFoodItems(filter, pageable);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Page Response", response));
@@ -58,18 +63,21 @@ public class FoodController {
 
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<FoodResponse>> updateFood(@PathVariable Long id, @Valid @RequestBody CreateFoodRequest request) {
+        log.info("Received update food request {}", request);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Updated Food Item", foodService.updateFoodItem(id, request)));
     }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<ApiResponse<FoodResponse>> updateFoodStatus(@PathVariable Long id, @Valid @RequestBody UpdateFoodStatusRequest request) {
+        log.info("Received update food status request {}", request);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Food Item with updated status", foodService.updateFoodItemStatus(id, request)));
     }
 
     @GetMapping("/my-listings")
     public ResponseEntity<ApiResponse<PageResponse<FoodResponse>>> getMyListings(Pageable pageable) {
+        log.info("Received getting self-listings request");
         return ResponseEntity.ok(Mapper.toApiResponse("My listings",foodService.getMyListings(pageable)));
     }
 }
