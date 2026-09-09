@@ -54,7 +54,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequests -> authorizeRequests
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Authentication
-                        .requestMatchers("/api/auth/me").authenticated()
+                        .requestMatchers("/api/auth/me","/api/auth/logout","/api/auth/logout-all").authenticated()
                         .requestMatchers("/api/auth/**").permitAll()
 
                         // Swagger
