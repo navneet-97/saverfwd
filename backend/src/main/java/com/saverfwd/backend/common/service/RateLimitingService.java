@@ -18,11 +18,25 @@ public class RateLimitingService {
     public boolean allowRegisterRequest(String email, HttpServletRequest httpServletRequest) {
         String ip = httpServletRequest.getRemoteAddr();
         Bucket emailBucket = rateLimiters.computeIfAbsent(
-                "REGISTER: " + email, key -> rateLimiterConfig.createEmailBucket()
+                "REGISTER: " + email, key -> rateLimiterConfig.createEmailBucket(5, 1)
         );
 
         Bucket ipBucket = rateLimiters.computeIfAbsent(
-                "IP: " + ip, key -> rateLimiterConfig.createIpBucket()
+                "IP: " + ip, key -> rateLimiterConfig.createIpBucket(20, 1)
+        );
+
+        return emailBucket.tryConsume(1) && ipBucket.tryConsume(1);
+    }
+
+    public boolean allowLoginRequest(String email, HttpServletRequest httpServletRequest) {
+        String ip = httpServletRequest.getRemoteAddr();
+
+        Bucket emailBucket = rateLimiters.computeIfAbsent(
+                "LOGIN: " + email, key -> rateLimiterConfig.createEmailBucket(5, 1/4)
+        );
+
+        Bucket ipBucket = rateLimiters.computeIfAbsent(
+                "IP: " + ip, key -> rateLimiterConfig.createIpBucket(20, 1/4)
         );
 
         return emailBucket.tryConsume(1) && ipBucket.tryConsume(1);

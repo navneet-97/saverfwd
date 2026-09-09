@@ -10,18 +10,18 @@ import java.time.Duration;
 @Component
 public class RateLimiterConfig {
 
-    public Bucket createEmailBucket() {
-        Refill refill = Refill.greedy(5, Duration.ofHours(1));
-        Bandwidth bandwidth = Bandwidth.classic(5, refill);
+    public Bucket createEmailBucket(long tokens, long hours) {
+        Refill refill = Refill.greedy(tokens, Duration.ofHours(hours));
+        Bandwidth bandwidth = Bandwidth.classic(tokens, refill);
 
         return Bucket.builder()
                 .addLimit(bandwidth)
                 .build();
     }
 
-    public Bucket createIpBucket() {
-        Refill refill = Refill.greedy(20, Duration.ofHours(1));
-        Bandwidth bandwidth = Bandwidth.classic(20, refill);
+    public Bucket createIpBucket(long tokens, long hours) {
+        Refill refill = Refill.greedy(tokens, Duration.ofHours(hours));
+        Bandwidth bandwidth = Bandwidth.classic(tokens, refill);
 
         return Bucket.builder()
                 .addLimit(bandwidth)

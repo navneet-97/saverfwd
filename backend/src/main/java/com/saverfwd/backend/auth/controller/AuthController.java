@@ -45,7 +45,10 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody UserLoginRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody UserLoginRequest request, HttpServletRequest httpServletRequest) {
+        if (!rateLimitingService.allowLoginRequest(request.email(), httpServletRequest)) {
+            throw new TooManyRequestsException("Too many login requests");
+        }
         return new ResponseEntity<>(authService.loginUser(request), HttpStatus.OK);
     }
 
