@@ -87,13 +87,13 @@ public class PickupService {
     private void validateTransitions(PickupStatus current, PickupStatus target) {
         log.info("Validating status {} for update request {}", current, target);
         if (StatusUpdateConstants.TERMINAL_PICKUP_STATUSES.contains(current)) {
-            log.error("Invalid status {} for update request {}", current, target);
+            log.error("Order status transition terminal error");
             throw new BusinessException(String.format("%s Pickup status cannot be changed!", current));
         }
 
         Set<PickupStatus> allowed = StatusUpdateConstants.ALLOWED_PICKUP_TRANSITIONS.getOrDefault(current, Set.of());
         if (!allowed.contains(target)) {
-            log.error("Invalid status {} for update request {}", current, target);
+            log.error("Order status transition allowed error");
             throw new BusinessException(String.format("Cannot change Pickup status from %s to %s", current, target));
         }
     }
