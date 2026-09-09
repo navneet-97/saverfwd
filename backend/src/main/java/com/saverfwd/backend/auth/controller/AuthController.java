@@ -18,7 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -69,6 +68,9 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refreshAccessToken(@Valid @RequestBody RefreshTokenRequest request) {
+        if (!rateLimitingService.allowRefreshRequest(request.refreshToken())) {
+            throw new TooManyRequestsException("Too many refresh requests");
+        }
         return new ResponseEntity<>(authService.refreshAccessToken(request.refreshToken()), HttpStatus.OK);
     }
 
