@@ -185,6 +185,10 @@ public class AuthService {
             }
 
             User user = otp.getUser();
+            if (!user.getEmail().equalsIgnoreCase(request.email())) {
+                throw new BusinessException("Invalid email");
+            }
+
             user.setPassword(passwordEncoder.encode(request.password()));
             return Mapper.toApiResponse("Password reset successfully!", null);
         }).orElseThrow(() -> new ResourceNotFoundException("Invalid code"));

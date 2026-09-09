@@ -73,12 +73,18 @@ public class AuthController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestParam("email") @NotBlank(message = "Email is required") String email) {
+    public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestParam("email") @NotBlank(message = "Email is required") String email, HttpServletRequest httpServletRequest) {
+        if (!rateLimitingService.allowForgotRequest(email, httpServletRequest)) {
+            throw new TooManyRequestsException("Too many requests");
+        }
         return new ResponseEntity<>(authService.forgotPassword(email), HttpStatus.CREATED);
     }
 
     @PatchMapping("/reset-password")
     public ResponseEntity<ApiResponse<Object>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        if (!rateLimitingService.allowResetRequest(request.email())) {
+            throw new TooManyRequestsException("Too many requests");
+        }
         return new ResponseEntity<>(authService.resetPassword(request), HttpStatus.OK);
     }
 }

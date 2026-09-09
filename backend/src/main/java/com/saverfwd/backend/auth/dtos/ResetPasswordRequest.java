@@ -1,6 +1,7 @@
 package com.saverfwd.backend.auth.dtos;
 
 import com.saverfwd.backend.common.constant.RegexConstants;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 
@@ -13,6 +14,10 @@ public record ResetPasswordRequest(
         String password,
 
         @NotBlank(message = "Otp is required")
-        String otp
+        String otp,
+
+        @NotBlank(message = "Email is required")
+        @Email(message = "Invalid Email format")
+        String email
 ) {
 }

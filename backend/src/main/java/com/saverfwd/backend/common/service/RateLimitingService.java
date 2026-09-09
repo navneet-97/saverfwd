@@ -41,4 +41,24 @@ public class RateLimitingService {
 
         return emailBucket.tryConsume(1) && ipBucket.tryConsume(1);
     }
+
+    public boolean allowForgotRequest(String email, HttpServletRequest httpServletRequest) {
+        String ip = httpServletRequest.getRemoteAddr();
+        Bucket emailBucket = rateLimiters.computeIfAbsent(
+                "FORGOT: " + email, key -> rateLimiterConfig.createEmailBucket(3, 1)
+        );
+        Bucket ipBucket = rateLimiters.computeIfAbsent(
+                "IP: " + ip, key -> rateLimiterConfig.createIpBucket(10, 1)
+        );
+
+        return emailBucket.tryConsume(1) && ipBucket.tryConsume(1);
+    }
+
+    public boolean allowResetRequest(String email) {
+        Bucket emailBucket = rateLimiters.computeIfAbsent(
+                "RESET: " + email, key -> rateLimiterConfig.createEmailBucket(10, 1)
+        );
+
+        return emailBucket.tryConsume(1);
+    }
 }
