@@ -7,6 +7,7 @@ import com.saverfwd.backend.user.dto.UserFilterRequest;
 import com.saverfwd.backend.user.dto.UserResponse;
 import com.saverfwd.backend.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
+@Slf4j
 public class UserController {
 
     private final UserService userService;
@@ -27,14 +29,17 @@ public class UserController {
             @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable
     ) {
+        log.debug("Getting users for filter: {}", filter);
         PageResponse<UserResponse> response = userService.getUsers(filter, pageable);
         ApiResponse<PageResponse<UserResponse>> apiResponse = Mapper.toApiResponse("Users fetched successfully!", response);
+        log.info("Users fetched successfully: {}", apiResponse);
 
         return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }
 
     @DeleteMapping("/{userId}")
     public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long userId) {
+        log.debug("Deleting user: {}", userId);
         return new ResponseEntity<>(userService.deleteUser(userId), HttpStatus.OK);
     }
 }
