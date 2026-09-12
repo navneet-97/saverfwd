@@ -8,10 +8,12 @@ import com.saverfwd.backend.pickup.dto.UpdatePickupRequest;
 import com.saverfwd.backend.pickup.service.PickupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/pickup")
 @RequiredArgsConstructor
@@ -21,24 +23,28 @@ public class PickupController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<PickupResponse>> createPickup(@Valid @RequestBody CreatePickupRequest request) {
+        log.info("Creating Pickup Request {}", request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Mapper.toApiResponse("Pickup created!", pickupService.createPickup(request)));
     }
 
     @PatchMapping("/{pickupId}")
     public ResponseEntity<ApiResponse<PickupResponse>> updatePickup(@PathVariable("pickupId") Long pickupId, @RequestBody UpdatePickupRequest request) {
+        log.info("Updating Pickup Request {}", request);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Pickup updated!", pickupService.updatePickup(pickupId, request)));
     }
 
     @GetMapping("/{pickupId}")
     public ResponseEntity<ApiResponse<PickupResponse>> getPickup(@PathVariable("pickupId") Long pickupId) {
+        log.info("Retrieving Pickup Request with pickupId {}", pickupId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Pickup found!", pickupService.getPickupById(pickupId)));
     }
 
     @DeleteMapping("/{pickupId}")
     public ResponseEntity<ApiResponse<Void>> deletePickup(@PathVariable("pickupId") Long pickupId) {
+        log.info("Deleting Pickup Request with pickupId {}", pickupId);
         pickupService.deletePickup(pickupId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Pickup deleted!", null));

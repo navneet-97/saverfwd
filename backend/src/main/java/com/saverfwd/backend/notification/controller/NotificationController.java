@@ -9,6 +9,7 @@ import com.saverfwd.backend.notification.dto.NotificationSearchFilter;
 import com.saverfwd.backend.notification.service.NotificationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/notification")
 @RequiredArgsConstructor
@@ -25,12 +27,14 @@ public class NotificationController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<NotificationResponse>> sendNotification(@Valid @RequestBody CreateNotificationRequest request){
+        log.info("Received request to send notification {}", request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(Mapper.toApiResponse("Notification Created!", notificationService.sendNotification(request)));
     }
 
     @GetMapping("/{notificationId}")
     public ResponseEntity<ApiResponse<NotificationResponse>> getNotificationById(@PathVariable("notificationId") Long notificationId){
+        log.info("Received request to get notification with Id {}", notificationId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Notification found!", notificationService.getNotificationById(notificationId)));
     }
@@ -40,6 +44,7 @@ public class NotificationController {
             @Valid @ModelAttribute NotificationSearchFilter filter,
             @PageableDefault(page = 0, size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
+        log.info("Received request to get all notifications with filter {}", filter);
         PageResponse<NotificationResponse> pageResponse = notificationService.getNotifications(filter, pageable);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Notifications found!", pageResponse));
@@ -47,12 +52,14 @@ public class NotificationController {
 
     @PatchMapping("/{notificationId}/read")
     public ResponseEntity<ApiResponse<NotificationResponse>> readNotification(@PathVariable("notificationId") Long notificationId){
+        log.info("Received request to set read true in notification with Id {}", notificationId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Notification updated!", notificationService.readNotificationById(notificationId)));
     }
 
     @DeleteMapping("/{notificationId}")
     public ResponseEntity<ApiResponse<Void>> deleteNotification(@PathVariable("notificationId") Long notificationId){
+        log.info("Received request to delete notification with Id {}", notificationId);
         notificationService.deleteNotificationById(notificationId);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(Mapper.toApiResponse("Notification deleted!", null));
